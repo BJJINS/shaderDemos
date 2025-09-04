@@ -3,6 +3,7 @@
         "fract",
         "HASHSCALE",
         "ifdef",
-        "mediump"
+        "mediump",
+        "smoothstep"
     ]
 }
