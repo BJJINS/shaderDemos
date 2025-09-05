@@ -5,5 +5,8 @@
         "ifdef",
         "mediump",
         "smoothstep"
-    ]
+    ],
+    "glsl-canvas.textures": {
+        "0": "assets/tone.jpg",
+    },
 }
