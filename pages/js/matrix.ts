@@ -1,3 +1,4 @@
+// 平移矩阵
 const translate = (
   matrix: Matrix4,
   offset: number,
@@ -12,7 +13,7 @@ const translate = (
   }
 };
 
-export const setIdentityM = (matrix: Matrix4, n = 0) => {
+export const setIdentity = (matrix: Matrix4, n = 0) => {
   for (let i = 0; i < 16; i++) {
     matrix[i] = n;
   }
@@ -22,12 +23,14 @@ export const setIdentityM = (matrix: Matrix4, n = 0) => {
   matrix[15] = 1;
 };
 
+// 计算向量的长度
 const length = (vector: Vector3) => {
   return Math.sqrt(
     vector.x * vector.x + vector.y * vector.y + vector.z * vector.z
   );
 };
 
+// 归一化向量
 const normalize = (vector: Vector3) => {
   const len = length(vector);
   return {
@@ -37,6 +40,7 @@ const normalize = (vector: Vector3) => {
   };
 };
 
+// 计算向量的叉积
 const cross = (a: Vector3, b: Vector3) => {
   return {
     x: a.y * b.z - a.z * b.y,
@@ -45,7 +49,7 @@ const cross = (a: Vector3, b: Vector3) => {
   };
 };
 // 创建视图矩阵（View Matrix）
-export const setLookAtM = (
+export const setLookAt = (
   matrix: Matrix4,
   offset: number,
   position: Vector3,
@@ -79,3 +83,49 @@ export const setLookAtM = (
   matrix[offset + 15] = 1.0;
   translate(matrix, offset, -position.x, -position.y, -position.z);
 };
+
+export const ortho = (
+  left: number,
+  right: number,
+  bottom: number,
+  top: number,
+  near: number,
+  far: number
+) => {};
+
+// function orthoM(
+//   matrix,
+//   offset,
+//   left,
+//   right,
+//   bottom,
+//   top,
+//   near,
+//   far
+// ) {
+//   r_width = 1.0 / (right - left);
+//   r_height = 1.0 / (top - bottom);
+//   r_depth = 1.0 / (far - near);
+//   x = 2.0 * r_width;
+//   y = 2.0 * r_height;
+//   z = -2.0 * r_depth;
+//   tx = -(right + left) * r_width;
+//   ty = -(top + bottom) * r_height;
+//   tz = -(far + near) * r_depth;
+//   matrix[offset + 0] = x;
+//   matrix[offset + 5] = y;
+//   matrix[offset + 10] = z;
+//   matrix[offset + 12] = tx;
+//   matrix[offset + 13] = ty;
+//   matrix[offset + 14] = tz;
+//   matrix[offset + 15] = 1.0;
+//   matrix[offset + 1] = 0.0;
+//   matrix[offset + 2] = 0.0;
+//   matrix[offset + 3] = 0.0;
+//   matrix[offset + 4] = 0.0;
+//   matrix[offset + 6] = 0.0;
+//   matrix[offset + 7] = 0.0;
+//   matrix[offset + 8] = 0.0;
+//   matrix[offset + 9] = 0.0;
+//   matrix[offset + 11] = 0.0;
+// }
