@@ -1,30 +1,5 @@
-type M4 = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number
-];
-
-type Vector3 = {
-  x: number;
-  y: number;
-  z: number;
-};
-
 const translate = (
-  matrix: M4,
+  matrix: Matrix4,
   offset: number,
   tx: number,
   ty: number,
@@ -37,7 +12,7 @@ const translate = (
   }
 };
 
-export const setIdentityM = (matrix: M4, n = 0) => {
+export const setIdentityM = (matrix: Matrix4, n = 0) => {
   for (let i = 0; i < 16; i++) {
     matrix[i] = n;
   }
@@ -71,7 +46,7 @@ const cross = (a: Vector3, b: Vector3) => {
 };
 // 创建视图矩阵（View Matrix）
 export const setLookAtM = (
-  matrix: M4,
+  matrix: Matrix4,
   offset: number,
   position: Vector3,
   target: Vector3,

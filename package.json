@@ -9,7 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^7.1.2",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  },
+  "dependencies": {
+    "vite-plugin-glsl": "^1.5.1",
+    "vite-plugin-wasm": "^3.5.0"
   }
 }
