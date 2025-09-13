@@ -1,11 +1,12 @@
 #version 300 es
-precision mediump float;
+precision mediump float; // 为浮点数指定默认精度
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
 out vec4 fragColor;
+#include "light.glsl"
 
 struct Sphere {
     vec3 center;
@@ -20,15 +21,11 @@ struct Box {
     vec3 color;
 };
 
-struct Viewport {
-    float width; // 视口的宽度
-    float height; // 视口的高度
-    float dis; // 视口和相机的距离
-};
+vec3 lightColor = vec3(1.0);
 
 Sphere spheres[2] = Sphere[2](
-        Sphere(vec3(0.0, 0.0, -5.0), 1.0, vec3(1.0, 0.0, 0.0)), // 第一个球体
-        Sphere(vec3(9.0, 1.0, -4.0), 1.0, vec3(0.0, 1.0, 0.0)) // 第二个球体
+        Sphere(vec3(2.0, 0.0, -7.0), 1.0, vec3(.875, .286, .333)),
+        Sphere(vec3(-2.0, 0.0, -7.0), 1.0, vec3(0.192, 0.439, 0.651))
     );
 
 // 添加一个立方体
@@ -36,18 +33,18 @@ Box boxes[1] = Box[1](
         Box(vec3(-2.0, 2.0, -3.0), vec3(1.0, 1.0, 1.0), vec3(0.0, 0.0, 1.0)) // 一个蓝色立方体
     );
 
-vec2 sphIntersect(in vec3 rayOrigin, in vec3 rayDirection, in vec3 center, float radius) {
-    vec3 oc = rayOrigin - center;
+vec2 sphIntersect(in vec3 rayOrigin, in vec3 rayDirection, in Sphere sphere) {
+    vec3 oc = rayOrigin - sphere.center;
     float b = dot(oc, rayDirection);
-    float c = dot(oc, oc) - radius * radius;
+    float c = dot(oc, oc) - sphere.radius * sphere.radius;
     float h = b * b - c;
     if (h < 0.0) return vec2(-1.0); // no intersection
     h = sqrt(h);
     return vec2(-b - h, -b + h);
 }
 
-vec2 boxIntersection(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal){
-    vec3 m = 1.0 / rd; 
+vec2 boxIntersection(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal) {
+    vec3 m = 1.0 / rd;
     vec3 n = m * ro;
     vec3 k = abs(m) * boxSize;
     vec3 t1 = -n - k;
@@ -62,65 +59,46 @@ vec2 boxIntersection(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal){
     return vec2(tN, tF);
 }
 
-vec3 coordToViewport(vec2 coord, Viewport viewport) {
-    float x = coord.x * viewport.width / u_resolution.x;
-    float y = coord.y * viewport.height / u_resolution.y;
-    float z = -viewport.dis;
-    return vec3(x, y, z);
-}
-
-vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection, in vec3 v, float minT, float maxT) {
-    float closest_t = 100.0;
+vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
+    float minT = 1.0;
+    float maxT = 1000.0;
+    float closest_t = 1000.0;
     vec3 color = vec3(0.0);
-
-    // 检测与球体的相交
     for (int i = 0; i < 2; i++) {
-        // 获取当前光源
         Sphere sphere = spheres[i];
-        vec2 intersection = sphIntersect(rayOrigin, rayDirection, sphere.center, sphere.radius); // 将球体移到z=-3的位置
-        if (intersection.x < closest_t && minT < intersection.x && intersection.x < maxT) {
-            closest_t = intersection.x;
-            color = sphere.color;
-        }
-        if (intersection.y < closest_t && minT < intersection.y && intersection.y < maxT) {
-            closest_t = intersection.y;
-            color = sphere.color;
+        vec2 t = sphIntersect(rayOrigin, rayDirection, sphere);
+        if (t.x < closest_t && minT < t.x && t.x < maxT) {
+            closest_t = t.x;
+            color += ambient(lightColor, 0.6);
+            vec3 hitPoint = rayOrigin + rayDirection * t.x;
+            vec3 normal = normalize(hitPoint - sphere.center);
+            vec3 viewDirection = normalize(rayOrigin - hitPoint);
+            color += pointLight(lightColor, 1.0, vec3(5.0, 20.0, 0.0), hitPoint, normal, viewDirection, 5.0, 0.01);
+            // color += directionLight(lightColor, 1.0, normal, vec3(0.0, 0.0, 10.0), viewDirection, 5.0);
+
+            color += specularLight(lightColor, 1.0, normal, viewDirection);
+
+            color *= sphere.color;
         }
     }
-
-    // 添加检测与立方体的相交
-    vec3 normal;
-    for (int i = 0; i < 1; i++) {
-        Box box = boxes[i];
-        vec2 intersection = boxIntersection(rayOrigin - box.center, rayDirection, box.size, normal);
-        if (intersection.x < closest_t && minT < intersection.x && intersection.x < maxT) {
-            closest_t = intersection.x;
-            color = box.color;
-        }
-        if (intersection.y < closest_t && minT < intersection.y && intersection.y < maxT) {
-            closest_t = intersection.y;
-            color = box.color;
-        }
-    }
-
     return color;
 }
 
 void main() {
     float aspect = u_resolution.x / u_resolution.y;
-    vec2 coord = vec2(gl_FragCoord.x - u_resolution.x / 2.0, gl_FragCoord.y - u_resolution.y / 2.0);
 
-    Viewport viewport;
-    viewport.dis = 1.0;
-    viewport.height = 5.0;
-    viewport.width = viewport.height * aspect;
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    uv = uv * 2.0 - 1.0;
+    uv.x *= aspect;
+    float fov = 60.0; // 视角，单位为度
+    float tanFov = tan(radians(fov) * 0.5);
+    uv *= tanFov;
 
-    vec3 v = coordToViewport(coord, viewport);
+    // 计算正确的射线方向，考虑透视效果
+    vec3 rayOrigin = vec3(0.0, 0.0, 0.0); // 将相机向后移动一些距离，以便更好地观察场景
+    vec3 rayDirection = normalize(vec3(uv, -1.0));
 
-    vec3 rayOrigin = vec3(0.0, 0.0, 0.0);
-    vec3 rayDirection = normalize(v - rayOrigin);
-
-    vec3 color = raytracing(rayOrigin, rayDirection, v, 1.0, 10.0);
+    vec3 color = raytracing(rayOrigin, rayDirection);
 
     fragColor = vec4(color, 1.0);
 }
