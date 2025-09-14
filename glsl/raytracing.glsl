@@ -23,7 +23,7 @@ vec3 lightColor = vec3(1.0);
 
 Sphere spheres[2] = Sphere[2](
         Sphere(vec3(2.0, 0.0, -7.0), 1.0, vec3(.875, .286, .333)),
-        Sphere(vec3(-2.0, 0.0, -7.0), 1.0, vec3(0.192, 0.439, 0.651))
+        Sphere(vec3(-6.0, 0.0, -7.0), 1.0, vec3(0.192, 0.439, 0.651))
     );
 
 Box boxes[1] = Box[1](
@@ -157,25 +157,15 @@ void main() {
     // 计算UV坐标
     float aspect = u_resolution.x / u_resolution.y;
     vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
-
-    // 相机设置
-    vec3 rayOrigin = vec3(0.0, 0.0, 0.0); // 相机位置
-    vec3 rayTarget = vec3(0.0, 0.0, -1.0); // 看向的点
-    vec3 up = vec3(0.0, 1.0, 0.0);
-
-    // 计算相机坐标系
-    vec3 forward = normalize(rayTarget - rayOrigin);
-    vec3 right = normalize(cross(forward, up));
-    vec3 cameraUp = cross(right, forward);
-
-    // 计算射线方向（带透视）
     float fov = 60.0;
     float fovRad = radians(fov);
-    vec3 rayDirection = normalize(uv.x * right + uv.y * cameraUp + forward / tan(fovRad / 2.0));
 
-    // 射线追踪并获取颜色
+    // 相机设置
+    vec3 rayOrigin = vec3(0.0, 0.0, 5.0); // 相机位置
+    vec3 rayTarget = vec3(0.0, 0.0, -1.0); // 看向的点
+    float dis = 1.0;
+    vec3 forward = normalize(rayTarget - rayOrigin) / tan(fovRad / 2.0);
+    vec3 rayDirection = normalize(vec3(uv, 0.0) + forward * dis);
     vec3 color = raytracing(rayOrigin, rayDirection);
-
-    // 输出最终颜色
     fragColor = vec4(color, 1.0);
 }
