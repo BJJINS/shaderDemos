@@ -72,11 +72,9 @@ vec2 sphIntersect(in vec3 rayOrigin, in vec3 rayDirection, in Sphere sphere) {
     return vec2(-b - h, -b + h);
 }
 
-// 修复的立方体相交检测，确保法线正确
-vec2 boxIntersect(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal)
-{
-    vec3 m = 1.0 / rd; // can precompute if traversing a set of aligned boxes
-    vec3 n = m * ro; // can precompute if traversing a set of aligned boxes
+vec2 boxIntersect(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal) {
+    vec3 m = 1.0 / rd; 
+    vec3 n = m * ro; 
     vec3 k = abs(m) * boxSize;
     vec3 t1 = -n - k;
     vec3 t2 = -n + k;
