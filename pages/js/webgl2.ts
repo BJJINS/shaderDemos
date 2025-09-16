@@ -15,7 +15,7 @@ export const initWebGl2 = () => {
   const gl = canvas.getContext("webgl2", {
     antialias: window.devicePixelRatio < 2,
   })!;
-  gl.clearColor(108 / 255, 225 / 255, 153 / 255, 1);
+  gl.clearColor(1, 1, 1, 1);
   resize(gl);
   document.body.appendChild(canvas);
   window.addEventListener("resize", () => resize(gl));

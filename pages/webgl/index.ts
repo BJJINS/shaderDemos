@@ -1,5 +1,5 @@
 import { initWebGl2 } from "../js/webgl2";
-import { createAttributeColor, createAttributePosition, createProgram, createShader, createUniformResolution } from "./../js/webgl_utils";
+import {  createAttributePosition, createProgram, createShader, createUniformResolution } from "./../js/webgl_utils";
 
 const gl = initWebGl2();
 
@@ -35,24 +35,13 @@ const fragmentShader = createShader(
 const program = createProgram(gl, vertexShader, fragmentShader)!;
 
 createAttributePosition(gl, program, 2, new Float32Array([
-    150,60,
-    180,82.5,
-    120,82.5,
-
-    100,60,
-    80,40,
-    120,40
-  ]));
-
-
-  createAttributeColor(gl, program, new Uint8Array([
-    121,85,72,
-    121,85,72,
-    121,85,72,
-
-    0,0,0,
-    255,255,255,
-    255,255,255,
+    500,900,
+    200,900,
+    500,1200,
+  
+    500,1200,
+    200,900,
+    200,1200,
   ]));
 
 
