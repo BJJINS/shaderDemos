@@ -31,24 +31,39 @@ export const createProgram = (
   gl.deleteProgram(program);
 };
 
-export const initWebGl2 = () => {
-  const canvas = document.createElement("canvas");
-  canvas.setAttribute("style", "position:fixed;top:0;left:0;");
-  const pixelRatio = Math.min(window.devicePixelRatio, 2);
-  canvas.width = window.innerWidth * pixelRatio;
-  canvas.height = window.innerHeight * pixelRatio;
-  const gl = canvas.getContext("webgl2", {
-    antialias: window.devicePixelRatio < 2,
-  })!;
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(108 / 255, 225 / 255, 153 / 255, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  document.body.appendChild(canvas);
-  window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth * pixelRatio;
-    canvas.height = window.innerHeight * pixelRatio;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-  });
-  return gl;
+export const createAttributePosition = (
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  size: number,
+  srcData: AllowSharedBufferSource,
+) => {
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+  const positionBuffer = gl.createBuffer()!;
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.enableVertexAttribArray(positionAttributeLocation);
+  gl.vertexAttribPointer(positionAttributeLocation, size, gl.FLOAT, false, 0, 0);
+  gl.bufferData(gl.ARRAY_BUFFER, srcData, gl.STATIC_DRAW);
 };
+
+
+export const createAttributeColor = (
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  srcData: AllowSharedBufferSource,
+) => {
+  const colorAttributeLocation = gl.getAttribLocation(program, "a_color");
+  const colorBuffer = gl.createBuffer()!;
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  gl.enableVertexAttribArray(colorAttributeLocation);
+  gl.vertexAttribPointer(colorAttributeLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
+  gl.bufferData(gl.ARRAY_BUFFER, srcData, gl.STATIC_DRAW);
+}
+
+// uniform必须在gl.useProgram(program)之后
+export const createUniformResolution = (
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+) => {
+  const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
+  gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+}
