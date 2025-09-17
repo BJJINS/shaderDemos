@@ -3,88 +3,16 @@ precision mediump float;
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
-uniform float u_time;
 
 out vec4 fragColor;
 
-struct Sphere {
-    vec3 center;
-    float radius;
-    vec3 color;
-};
+#include "light.glsl"
+#include "sphere.glsl"
+#include "box.glsl"
 
-struct Box {
-    vec3 center;
-    vec3 size;
-    vec3 color;
-};
 
-vec3 lightColor = vec3(1.0);
 
-Sphere spheres[2] = Sphere[2](
-        Sphere(vec3(2.0, 0.0, 3.0), 1.0, vec3(.875, .286, .333)),
-        Sphere(vec3(-2.0, 0.0, 3.0), 1.0, vec3(0.192, 0.439, 0.651))
-    );
 
-Box boxes[1] = Box[1](
-        Box(vec3(0.0, 0.0, 3.0), vec3(1.0), vec3(148, 147, 150) / 255.0) // 绿色立方体便于观察
-    );
-
-// 光照函数
-vec3 ambient(vec3 color, float intensity) {
-    return color * intensity;
-}
-
-vec3 pointLight(vec3 color, float intensity, vec3 position, vec3 hitPoint, vec3 normal, vec3 viewDirection, float specularPower, float decayPower) {
-    vec3 lightDir = normalize(position - hitPoint);
-    float distance = length(position - hitPoint);
-
-    // 漫反射
-    float diff = max(dot(normal, lightDir), 0.0);
-
-    // 高光反射
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDirection, reflectDir), 0.0), specularPower);
-
-    // 衰减
-    float attenuation = 1.0 / (1.0 + decayPower * distance);
-
-    return color * intensity * attenuation * (diff + spec);
-}
-
-float fresnel(float bias, float scale, float power, vec3 I, vec3 N) {
-    return bias + scale * pow(1.0 - dot(I, N), power);
-}
-
-vec3 specularLight(vec3 color, float intensity, vec3 normal, vec3 viewDirection) {
-    float fres = fresnel(0.2, 1.0, 5.0, viewDirection, normal);
-    return fres * color * intensity;
-}
-
-// 球体相交检测
-vec2 sphIntersect(in vec3 rayOrigin, in vec3 rayDirection, in Sphere sphere) {
-    vec3 oc = rayOrigin - sphere.center;
-    float b = dot(oc, rayDirection);
-    float c = dot(oc, oc) - sphere.radius * sphere.radius;
-    float h = b * b - c;
-    if (h < 0.0) return vec2(-1.0); // 无交点
-    h = sqrt(h);
-    return vec2(-b - h, -b + h);
-}
-
-vec2 boxIntersect(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal) {
-    vec3 m = 1.0 / rd;
-    vec3 n = m * ro;
-    vec3 k = abs(m) * boxSize;
-    vec3 t1 = -n - k;
-    vec3 t2 = -n + k;
-    float tN = max(max(t1.x, t1.y), t1.z);
-    float tF = min(min(t2.x, t2.y), t2.z);
-    if (tN > tF || tF < 0.0) return vec2(-1.0); // no intersection
-    outNormal = (tN > 0.0) ? step(vec3(tN), t1) : step(t2, vec3(tF));
-    outNormal *= -sign(rd);
-    return vec2(tN, tF);
-}
 
 // 修复的光线追踪函数
 vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
@@ -129,8 +57,6 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
         vec3 hitPoint = rayOrigin + rayDirection * closestT;
         vec3 viewDirection = normalize(rayOrigin - hitPoint);
 
-        // 使用单个光源位置便于调试
-        vec3 lightPos = vec3(5.0, 5.0, 3.0);
         // 环境光（降低强度以便看到其他光照效果）
         finalColor = ambient(lightColor, 0.3);
         // 点光源（统一光源位置）
@@ -155,18 +81,11 @@ mat3 rotateX3x3(float angle) {
 }
 
 void main() {
-    // 计算UV坐标
-    float aspect = u_resolution.x / u_resolution.y;
     vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
-
-    // 旋转角度（弧度）
     float angle = radians(-45.0); // 45度
-
-    // 获取旋转矩阵
     mat3 rotationMatrix = rotateX3x3(angle);
 
     vec3 rayOrigin = vec3(0.0, 7.0, -2.0); // 相机位置
-    // 应用旋转矩阵
     vec3 rayDirection = normalize(rotationMatrix * vec3(uv, 1.0));
     vec3 color = raytracing(rayOrigin, rayDirection);
     fragColor = vec4(color, 1.0);
