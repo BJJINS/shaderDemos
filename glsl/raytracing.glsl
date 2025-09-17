@@ -22,12 +22,12 @@ struct Box {
 vec3 lightColor = vec3(1.0);
 
 Sphere spheres[2] = Sphere[2](
-        Sphere(vec3(2.0, 0.0, -7.0), 1.0, vec3(.875, .286, .333)),
-        Sphere(vec3(-6.0, 0.0, -7.0), 1.0, vec3(0.192, 0.439, 0.651))
+        Sphere(vec3(2.0, 0.0, 3.0), 1.0, vec3(.875, .286, .333)),
+        Sphere(vec3(-2.0, 0.0, 3.0), 1.0, vec3(0.192, 0.439, 0.651))
     );
 
 Box boxes[1] = Box[1](
-        Box(vec3(0.0, 0.0, -7.0), vec3(1.0), vec3(148, 147, 150) / 255.0) // 绿色立方体便于观察
+        Box(vec3(0.0, 0.0, 3.0), vec3(1.0), vec3(148, 147, 150) / 255.0) // 绿色立方体便于观察
     );
 
 // 光照函数
@@ -47,7 +47,7 @@ vec3 pointLight(vec3 color, float intensity, vec3 position, vec3 hitPoint, vec3 
     float spec = pow(max(dot(viewDirection, reflectDir), 0.0), specularPower);
 
     // 衰减
-    float attenuation = 1.0 / (1.0 + decayPower * distance * distance);
+    float attenuation = 1.0 / (1.0 + decayPower * distance);
 
     return color * intensity * attenuation * (diff + spec);
 }
@@ -73,8 +73,8 @@ vec2 sphIntersect(in vec3 rayOrigin, in vec3 rayDirection, in Sphere sphere) {
 }
 
 vec2 boxIntersect(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal) {
-    vec3 m = 1.0 / rd; 
-    vec3 n = m * ro; 
+    vec3 m = 1.0 / rd;
+    vec3 n = m * ro;
     vec3 k = abs(m) * boxSize;
     vec3 t1 = -n - k;
     vec3 t2 = -n + k;
@@ -130,40 +130,44 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
         vec3 viewDirection = normalize(rayOrigin - hitPoint);
 
         // 使用单个光源位置便于调试
-        vec3 lightPos = vec3(5.0 * sin(u_time), 3.0, -5.0 + 5.0 * cos(u_time));
-
+        vec3 lightPos = vec3(5.0, 5.0, 3.0);
         // 环境光（降低强度以便看到其他光照效果）
-        finalColor = ambient(lightColor, 0.1);
-
+        finalColor = ambient(lightColor, 0.3);
         // 点光源（统一光源位置）
-        finalColor += pointLight(lightColor, 3.0, lightPos, hitPoint, hitNormal, viewDirection, 32.0, 0.1);
-
-        // 高光
-        finalColor += specularLight(lightColor, 0.5, hitNormal, viewDirection);
-
+        finalColor += pointLight(lightColor, 2.0, lightPos, hitPoint, hitNormal, viewDirection, 4.0, 0.1);
         // 应用物体颜色
         finalColor *= objectColor;
     } else {
         // 背景色
         finalColor = vec3(0.1, 0.1, 0.2);
     }
-
     return finalColor;
+}
+
+mat3 rotateX3x3(float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return mat3(
+        1.0, 0.0, 0.0,
+        0.0, c, -s,
+        0.0, s, c
+    );
 }
 
 void main() {
     // 计算UV坐标
     float aspect = u_resolution.x / u_resolution.y;
     vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
-    float fov = 60.0;
-    float fovRad = radians(fov);
 
-    // 相机设置
-    vec3 rayOrigin = vec3(0.0, 0.0, 5.0); // 相机位置
-    vec3 rayTarget = vec3(0.0, 0.0, -1.0); // 看向的点
-    float dis = 1.0;
-    vec3 forward = normalize(rayTarget - rayOrigin) / tan(fovRad / 2.0);
-    vec3 rayDirection = normalize(vec3(uv, 0.0) + forward * dis);
+    // 旋转角度（弧度）
+    float angle = radians(-45.0); // 45度
+
+    // 获取旋转矩阵
+    mat3 rotationMatrix = rotateX3x3(angle);
+
+    vec3 rayOrigin = vec3(0.0, 7.0, -2.0); // 相机位置
+    // 应用旋转矩阵
+    vec3 rayDirection = normalize(rotationMatrix * vec3(uv, 1.0));
     vec3 color = raytracing(rayOrigin, rayDirection);
     fragColor = vec4(color, 1.0);
 }
