@@ -31,33 +31,21 @@ export const createProgram = (
   gl.deleteProgram(program);
 };
 
-export const createAttributePosition = (
+export const createProgramAttribute = (
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
   size: number,
   srcData: AllowSharedBufferSource,
+  name: string,
+  type: number
 ) => {
-  const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-  const positionBuffer = gl.createBuffer()!;
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.enableVertexAttribArray(positionAttributeLocation);
-  gl.vertexAttribPointer(positionAttributeLocation, size, gl.FLOAT, false, 0, 0);
+  const attributeLocation = gl.getAttribLocation(program, name);
+  const buffer = gl.createBuffer()!;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.enableVertexAttribArray(attributeLocation);
+  gl.vertexAttribPointer(attributeLocation, size, type, false, 0, 0);
   gl.bufferData(gl.ARRAY_BUFFER, srcData, gl.STATIC_DRAW);
 };
-
-
-export const createAttributeColor = (
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  srcData: AllowSharedBufferSource,
-) => {
-  const colorAttributeLocation = gl.getAttribLocation(program, "a_color");
-  const colorBuffer = gl.createBuffer()!;
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.enableVertexAttribArray(colorAttributeLocation);
-  gl.vertexAttribPointer(colorAttributeLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
-  gl.bufferData(gl.ARRAY_BUFFER, srcData, gl.STATIC_DRAW);
-}
 
 // uniform必须在gl.useProgram(program)之后
 export const createUniformResolution = (
@@ -66,4 +54,22 @@ export const createUniformResolution = (
 ) => {
   const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
+}
+
+
+let textUnit = 0;
+export const createUniformTexture = (
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  source: TexImageSource,
+  name: string
+) => {
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
+  gl.generateMipmap(gl.TEXTURE_2D);
+  const location = gl.getUniformLocation(program, name);
+  gl.activeTexture(gl.TEXTURE0 + textUnit);
+  gl.uniform1i(location, textUnit);
+  textUnit++;
 }
