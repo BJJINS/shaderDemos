@@ -1,18 +1,29 @@
 #version 300 es
 precision mediump float;
 
-uniform vec2 u_resolution;
+uniform vec2 u_resolution; // 屏幕分辨率
 uniform vec2 u_mouse;
 
-out vec4 fragColor;
+out vec4 fragColor; // 输出颜色
 
-#include "light.glsl"
-#include "sphere.glsl"
-#include "box.glsl"
+#include "light.glsl" // 光照相关函数
+#include "sphere.glsl" // 球体相关定义和函数
+#include "box.glsl" // 立方体相关定义和函数
+#include "ray.glsl" // 射线相关定义和函数
 
+// 光源颜色
+vec3 lightColor = vec3(1.0);
+// 光源位置
+vec3 lightPos = vec3(5.0, 5.0, -1.0);
 
+Box boxes[1] = Box[1](
+        Box(vec3(0.0, 0.0, -4.0), vec3(1.0), vec3(148, 147, 150) / 255.0)
+    );
 
-
+Sphere spheres[2] = Sphere[2](
+        Sphere(vec3(2.0, 0.0, -4.0), 1.0, vec3(.875, .286, .333)),
+        Sphere(vec3(-2.0, 0.0, -4.0), 1.0, vec3(0.192, 0.439, 0.651))
+    );
 
 // 修复的光线追踪函数
 vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
@@ -26,14 +37,13 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
 
     // 检查球体
     for (int i = 0; i < 2; i++) {
-        Sphere s = spheres[i];
-        vec2 t = sphIntersect(rayOrigin, rayDirection, s);
+        Sphere sphere = spheres[i];
+        vec2 t = sphIntersect(rayOrigin, rayDirection, sphere);
         if (t.x > minT && t.x < maxT && t.x < closestT) {
             closestT = t.x;
             hitSomething = true;
-            vec3 hitPoint = rayOrigin + rayDirection * t.x;
-            hitNormal = normalize(hitPoint - s.center);
-            objectColor = s.color;
+            hitNormal = sphereNormal(rayOrigin, rayDirection, sphere, t.x);
+            objectColor = sphere.color;
         }
     }
 
@@ -80,13 +90,11 @@ mat3 rotateX3x3(float angle) {
     );
 }
 
-void main() {
-    vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
-    float angle = radians(-45.0); // 45度
-    mat3 rotationMatrix = rotateX3x3(angle);
+vec3 rayOrigin = vec3(0.0, 10.0, 0.0); // 相机位置
+vec3 target = vec3(0.0, 0.0, -4.0);
 
-    vec3 rayOrigin = vec3(0.0, 7.0, -2.0); // 相机位置
-    vec3 rayDirection = normalize(rotationMatrix * vec3(uv, 1.0));
+void main() {
+    vec3 rayDirection = ray(rayOrigin, target);
     vec3 color = raytracing(rayOrigin, rayDirection);
     fragColor = vec4(color, 1.0);
 }

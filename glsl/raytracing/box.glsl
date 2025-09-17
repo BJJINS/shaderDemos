@@ -4,11 +4,15 @@ struct Box {
     vec3 color;
 };
 
-Box boxes[1] = Box[1](
-        Box(vec3(0.0, 0.0, 3.0), vec3(1.0), vec3(148, 147, 150) / 255.0) // 绿色立方体便于观察
-    );
-
-vec2 boxIntersect(in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 outNormal) {
+// 计算光线与立方体的相交点
+// 参数：
+//   ro - 光线起点 必须是box的中心位置，否则需要先将ro转换到box的局部坐标
+//   rd - 光线方向（单位向量）
+//   boxSize - 立方体尺寸
+//   outNormal - 输出参数，存储交点处的法向量
+// 返回值：
+//   vec2(tN, tF) - 近交点和远交点的距离参数，如果没有交点则返回(-1.0)
+vec2 boxIntersect(vec3 ro, vec3 rd, vec3 boxSize, out vec3 outNormal) {
     vec3 m = 1.0 / rd;
     vec3 n = m * ro;
     vec3 k = abs(m) * boxSize;

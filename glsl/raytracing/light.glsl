@@ -1,8 +1,3 @@
-// 光源颜色
-vec3 lightColor = vec3(1.0);
-// 光源位置
-vec3 lightPos = vec3(5.0, 5.0, 3.0);
-
 // 光照函数
 vec3 ambient(vec3 color, float intensity) {
     return color * intensity;
