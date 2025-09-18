@@ -3,7 +3,7 @@ vec3 ambient(vec3 color, float intensity) {
     return color * intensity;
 }
 
-/** 
+/**
     点光源
     color: 光源颜色
     intensity: 光源强度
@@ -40,4 +40,19 @@ float fresnel(float bias, float scale, float power, vec3 I, vec3 N) {
 vec3 specularLight(vec3 color, float intensity, vec3 normal, vec3 viewDirection) {
     float fres = fresnel(0.2, 1.0, 5.0, viewDirection, normal);
     return fres * color * intensity;
+}
+
+float shadow(vec3 hitPoint, vec3 lightPos) {
+    // 阴影优化：修复阴影检测逻辑和改进阴影颜色
+    float shadowFactor = 1.0; // 默认完全照亮
+    vec3 shadowRayDirection = normalize(lightPos - hitPoint);
+    float lightDistance = length(lightPos - hitPoint); // 计算到光源的距离
+    Sphere shadowSphere;
+    Box shadowBox;
+    vec4 shadowSphereHit = closestSpheresIntersection(hitPoint, shadowRayDirection, 0.001, lightDistance, shadowSphere);
+    vec4 shadowBoxHit = closestBoxIntersection(hitPoint, shadowRayDirection, 0.001, lightDistance, shadowBox);
+    if (shadowSphereHit.w > 0.0 || shadowBoxHit.w > 0.0) {
+        shadowFactor = 0.5; // 阴影颜色
+    }
+    return shadowFactor;
 }

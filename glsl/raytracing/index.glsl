@@ -7,11 +7,11 @@ uniform vec2 u_mouse;
 out vec4 fragColor; // 输出颜色
 
 #include "constants.glsl"
-#include "light.glsl" // 光照相关函数
 #include "sphere.glsl" // 球体相关定义和函数
 #include "box.glsl" // 立方体相关定义和函数
 #include "ray.glsl" // 射线相关定义和函数
 #include "plane.glsl" // 平面相关定义和函数
+#include "light.glsl" // 光照相关函数
 
 // 修复的光线追踪函数
 vec4 raytracing(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t) {
@@ -58,22 +58,18 @@ vec4 raytracing(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_
         vec3 hitPoint = rayOrigin + rayDirection * closestT;
         vec3 viewDirection = normalize(rayOrigin - hitPoint);
 
-        // 阴影
-        vec3 shadowRayDirection = normalize(lightPos - hitPoint);
-        vec4 shadowSphereHit = closestSpheresIntersection(hitPoint, shadowRayDirection, 0.001, 100000000.0, hitSphere);
-        vec4 shadowBoxHit = closestBoxIntersection(hitPoint, shadowRayDirection, 0.001, 100000000.0, hitBox);
-        if (shadowBoxHit.w > 0.0 || shadowSphereHit.w > 0.0) {
-            return vec4(1.0, 0.0, 0.0, 0.1);
-        }
+        // 阴影优化：修复阴影检测逻辑和改进阴影颜色
+        float shadowFactor = shadow(hitPoint, lightPos);
+        
         if (isPlane) {
-            finalColor = objectColor;
+            finalColor = objectColor * shadowFactor; // 对平面应用阴影
         } else {
             // 环境光（降低强度以便看到其他光照效果）
-            finalColor = ambient(lightColor, 0.3);
+            vec3 ambientColor = ambient(lightColor, 0.3);
             // 点光源（统一光源位置）
-            finalColor += pointLight(lightColor, 2.0, lightPos, hitPoint, hitNormal, viewDirection, specularPower, 0.1);
-            // 应用物体颜色
-            finalColor *= objectColor;
+            vec3 pointLightColor = pointLight(lightColor, 2.0, lightPos, hitPoint, hitNormal, viewDirection, specularPower, 0.1);
+            // 应用物体颜色和阴影
+            finalColor = (ambientColor + pointLightColor * shadowFactor) * objectColor;
         }
     }
     return vec4(finalColor, 1.0);
