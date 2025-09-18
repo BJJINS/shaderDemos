@@ -10,26 +10,12 @@ out vec4 fragColor; // 输出颜色
 #include "sphere.glsl" // 球体相关定义和函数
 #include "box.glsl" // 立方体相关定义和函数
 #include "ray.glsl" // 射线相关定义和函数
-
-// 光源颜色
-vec3 lightColor = vec3(1.0);
-// 光源位置
-vec3 lightPos = vec3(5.0, 5.0, -1.0);
-
-Box boxes[1] = Box[1](
-        Box(vec3(0.0, 0.0, -4.0), vec3(1.0), vec3(148, 147, 150) / 255.0)
-    );
-
-Sphere spheres[2] = Sphere[2](
-        Sphere(vec3(2.0, 0.0, -4.0), 1.0, vec3(.875, .286, .333)),
-        Sphere(vec3(-2.0, 0.0, -4.0), 1.0, vec3(0.192, 0.439, 0.651))
-    );
+#include "plane.glsl" // 平面相关定义和函数
+#include "constants.glsl"
 
 // 修复的光线追踪函数
-vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
-    const float minT = 0.001; // 防止自相交
-    const float maxT = 1000.0;
-    float closestT = maxT;
+vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t) {
+    float closestT = max_t;
     vec3 finalColor = vec3(0.0);
     vec3 hitNormal;
     bool hitSomething = false;
@@ -39,7 +25,7 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
     for (int i = 0; i < 2; i++) {
         Sphere sphere = spheres[i];
         vec2 t = sphIntersect(rayOrigin, rayDirection, sphere);
-        if (t.x > minT && t.x < maxT && t.x < closestT) {
+        if (t.x > min_t && t.x < max_t && t.x < closestT) {
             closestT = t.x;
             hitSomething = true;
             hitNormal = sphereNormal(rayOrigin, rayDirection, sphere, t.x);
@@ -53,12 +39,23 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
         vec3 localRo = rayOrigin - b.center; // 转换到立方体局部坐标
         vec3 normal;
         vec2 t = boxIntersect(localRo, rayDirection, b.size * 0.5, normal);
-
-        if (t.x > minT && t.x < maxT && t.x < closestT) {
+        if (t.x > min_t && t.x < max_t && t.x < closestT) {
             closestT = t.x;
             hitSomething = true;
             hitNormal = normal; // 直接使用计算出的法线
             objectColor = b.color;
+        }
+    }
+
+    // 添加地面平面相交检查
+    float tGround = plaIntersect(rayOrigin, rayDirection, groundPlane);
+    vec3 hitPoint = rayOrigin + rayDirection * tGround;
+    if (abs(hitPoint.x) < 6.0 && abs(hitPoint.z) < 10.0) {
+        if (tGround > min_t && tGround < max_t && tGround < closestT) {
+            closestT = tGround;
+            hitSomething = true;
+            hitNormal = groundPlane.xyz; // 平面法线
+            objectColor = groundColor; // 白色地面
         }
     }
 
@@ -80,21 +77,8 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
     return finalColor;
 }
 
-mat3 rotateX3x3(float angle) {
-    float c = cos(angle);
-    float s = sin(angle);
-    return mat3(
-        1.0, 0.0, 0.0,
-        0.0, c, -s,
-        0.0, s, c
-    );
-}
-
-vec3 rayOrigin = vec3(0.0, 10.0, 0.0); // 相机位置
-vec3 target = vec3(0.0, 0.0, -4.0);
-
 void main() {
-    vec3 rayDirection = ray(rayOrigin, target);
-    vec3 color = raytracing(rayOrigin, rayDirection);
+    vec3 rayDirection = ray(rayOrigin, target, 2.0);
+    vec3 color = raytracing(rayOrigin, rayDirection, 1.0, 1000.0);
     fragColor = vec4(color, 1.0);
 }

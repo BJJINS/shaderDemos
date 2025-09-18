@@ -3,6 +3,17 @@ vec3 ambient(vec3 color, float intensity) {
     return color * intensity;
 }
 
+/** 
+    点光源
+    color: 光源颜色
+    intensity: 光源强度
+    position: 光源位置
+    hitPoint: 交点位置 | 顶点位置
+    normal: 交点法线
+    viewDirection: 视线防线，相机位置-交点位置
+    specularPower: 高光反射指数
+    decayPower: 衰减指数
+*/
 vec3 pointLight(vec3 color, float intensity, vec3 position, vec3 hitPoint, vec3 normal, vec3 viewDirection, float specularPower, float decayPower) {
     vec3 lightDir = normalize(position - hitPoint);
     float distance = length(position - hitPoint);

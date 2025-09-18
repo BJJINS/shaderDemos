@@ -6,7 +6,7 @@ struct Box {
 
 // 计算光线与立方体的相交点
 // 参数：
-//   ro - 光线起点 必须是box的中心位置，否则需要先将ro转换到box的局部坐标
+//   ro - 光线起点 必须是box的中心位置，否则需要先将ro转换到box的局部坐标 (cameraPosition - box.center)
 //   rd - 光线方向（单位向量）
 //   boxSize - 立方体尺寸
 //   outNormal - 输出参数，存储交点处的法向量
