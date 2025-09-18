@@ -2,7 +2,12 @@ struct Box {
     vec3 center;
     vec3 size;
     vec3 color;
+    float specularPower; // 高光反射指数
 };
+
+Box boxes[1] = Box[1](
+        Box(vec3(0.0, 0.0, -3.0), vec3(0.5), vec3(164, 103, 196) / 255.0, 2.0)
+    );
 
 // 计算光线与立方体的相交点
 // 参数：
@@ -24,4 +29,28 @@ vec2 boxIntersect(vec3 ro, vec3 rd, vec3 boxSize, out vec3 outNormal) {
     outNormal = (tN > 0.0) ? step(vec3(tN), t1) : step(t2, vec3(tF));
     outNormal *= -sign(rd);
     return vec2(tN, tF);
+}
+
+vec4 closestBoxIntersection(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t, out Box outBox) {
+    float closestT = max_t;
+    vec3 normal;
+
+    vec4 hit = vec4(0.0, 0.0, 0.0, -1.0);
+    for (int i = 0; i < 1; i++) {
+        Box box = boxes[i];
+        vec3 localRo = rayOrigin - box.center; // 转换到立方体局部坐标
+        vec2 t = boxIntersect(localRo, rayDirection, box.size, normal);
+        if (t.x > min_t && t.x < max_t && t.x < closestT) {
+            closestT = t.x;
+            outBox = box;
+        }
+        if (t.y > min_t && t.y < max_t && t.y < closestT) {
+            closestT = t.y;
+            outBox = box;
+        }
+    }
+    if (closestT < max_t) {
+        hit = vec4(normal, closestT);
+    }
+    return hit;
 }
