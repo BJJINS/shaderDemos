@@ -2,11 +2,10 @@
 precision mediump float;
 
 uniform vec2 u_resolution; // 屏幕分辨率
-uniform vec2 u_mouse;
 
 out vec4 fragColor; // 输出颜色
 
-#include "constants.glsl"
+#include "constants.glsl" // 常量定义
 #include "sphere.glsl" // 球体相关定义和函数
 #include "box.glsl" // 立方体相关定义和函数
 #include "ray.glsl" // 射线相关定义和函数
