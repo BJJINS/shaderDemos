@@ -56,6 +56,7 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_
             hitSomething = true;
             hitNormal = groundPlane.xyz; // 平面法线
             objectColor = groundColor; // 白色地面
+            isPlane = true;
         }
     }
 
