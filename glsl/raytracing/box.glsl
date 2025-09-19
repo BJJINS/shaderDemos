@@ -54,3 +54,19 @@ vec4 closestBoxIntersection(in vec3 rayOrigin, in vec3 rayDirection, float min_t
     }
     return hit;
 }
+
+// 射线与球体是否相交
+bool isBoxIntersect(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t) {
+    vec3 normal;
+    for (int i = 0; i < 1; i++) {
+        Box box = boxes[i];
+        vec2 t = boxIntersect(rayOrigin - box.center, rayDirection, box.size, normal);
+        if (t.x > min_t && t.x < max_t) {
+            return true;
+        }
+        if (t.y > min_t && t.y < max_t) {
+            return true;
+        }
+    }
+    return false;
+}

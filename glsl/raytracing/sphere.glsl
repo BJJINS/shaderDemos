@@ -27,6 +27,15 @@ vec3 sphereNormal(vec3 rayOrigin, vec3 rayDirection, Sphere sphere, float t) {
     return normalize(hitPoint - sphere.center);
 }
 
+/**
+ * 射线与球体先交处的交点
+ * @param rayOrigin 射线起点
+ * @param rayDirection 射线方向
+ * @param min_t 最小距离
+ * @param max_t 最大距离
+ * @param outSphere 最近的球体
+ * @return vec4 法线和交点解t
+ */
 vec4 closestSpheresIntersection(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t, out Sphere outSphere) {
     float closestT = max_t;
     vec4 hit = vec4(0.0, 0.0, 0.0, -1.0);
@@ -37,13 +46,28 @@ vec4 closestSpheresIntersection(in vec3 rayOrigin, in vec3 rayDirection, float m
             closestT = t.x;
             outSphere = sphere;
         }
-        // if (t.y > min_t && t.y < max_t && t.y < closestT) {
-        //     closestT = t.y;
-        //     outSphere = sphere;
-        // }
+        if (t.y > min_t && t.y < max_t && t.y < closestT) {
+            closestT = t.y;
+            outSphere = sphere;
+        }
     }
     if (closestT < max_t) {
         hit = vec4(sphereNormal(rayOrigin, rayDirection, outSphere, closestT), closestT);
     }
     return hit;
+}
+
+// 射线与球体是否相交
+bool isSphereIntersect(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t) {
+    for (int i = 0; i < 2; i++) {
+        Sphere sphere = spheres[i];
+        vec2 t = sphIntersect(rayOrigin, rayDirection, sphere);
+        if (t.x > min_t && t.x < max_t) {
+            return true;
+        }
+        if (t.y > min_t && t.y < max_t) {
+            return true;
+        }
+    }
+    return false;
 }
