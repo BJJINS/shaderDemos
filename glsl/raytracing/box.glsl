@@ -39,18 +39,25 @@ vec4 closestBoxIntersection(in vec3 rayOrigin, in vec3 rayDirection, float min_t
     for (int i = 0; i < 1; i++) {
         Box box = boxes[i];
         vec3 localRo = rayOrigin - box.center; // 转换到立方体局部坐标
-        vec2 t = boxIntersect(localRo, rayDirection, box.size, normal);
+        // 修改为绕y轴旋转的矩阵
+        mat3x3 rotationMatrix = mat3x3(
+            cos(u_time), 0.0, sin(u_time),
+            0.0, 1.0, 0.0,
+            -sin(u_time), 0.0, cos(u_time)
+        );
+        localRo = rotationMatrix * localRo;
+        vec3 rotatedRayDir = rotationMatrix * rayDirection;
+        vec2 t = boxIntersect(localRo, rotatedRayDir, box.size, normal);
         if (t.x > min_t && t.x < max_t && t.x < closestT) {
             closestT = t.x;
             outBox = box;
+            hit = vec4(transpose(rotationMatrix) * normal, closestT);
         }
         if (t.y > min_t && t.y < max_t && t.y < closestT) {
             closestT = t.y;
             outBox = box;
+            hit = vec4(transpose(rotationMatrix) * normal, closestT);
         }
-    }
-    if (closestT < max_t) {
-        hit = vec4(normal, closestT);
     }
     return hit;
 }
@@ -60,7 +67,16 @@ bool isBoxIntersect(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float 
     vec3 normal;
     for (int i = 0; i < 1; i++) {
         Box box = boxes[i];
-        vec2 t = boxIntersect(rayOrigin - box.center, rayDirection, box.size, normal);
+        vec3 localRo = rayOrigin - box.center; // 转换到立方体局部坐标
+        // 添加旋转矩阵，与closestBoxIntersection函数保持一致
+        mat3x3 rotationMatrix = mat3x3(
+            cos(u_time), 0.0, sin(u_time),
+            0.0, 1.0, 0.0,
+            -sin(u_time), 0.0, cos(u_time)
+        );
+        localRo = rotationMatrix * localRo;
+        vec3 rotatedRayDir = rotationMatrix * rayDirection;
+        vec2 t = boxIntersect(localRo, rotatedRayDir, box.size, normal);
         if (t.x > min_t && t.x < max_t) {
             return true;
         }
