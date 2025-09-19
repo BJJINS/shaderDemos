@@ -12,7 +12,28 @@ out vec4 fragColor; // 输出颜色
 #include "light.glsl" // 光照相关函数
 #include "ray.glsl" // 射线相关定义和函数
 
-// vec4 rayReflect(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t) {
+/**
+ * 反射
+ * @param hitPoint 交点位置
+ * @param incidentRay 入射光线
+ * @param normal 交点法线
+ * @return vec3 反射光线
+ */
+void rayReflect(in vec3 hitPoint, in vec3 incidentRay, in vec3 normal, float min_t, float max_t, int n) {
+    vec3 color;
+    for (int i = 0; i < n; i++) {
+        mat3x3 hitInfo = raytracingImpl(rayOrigin, rayDirection, min_t, max_t);
+        vec3 hitNormal = hitInfo[0];
+        vec3 objectColor = hitInfo[1];
+        float closestT = hitInfo[2].y;
+        float hitType = hitInfo[2].z;
+        if (hitType >= 0.0) {
+            vec3 reflectDir = reflect(incidentRay, hitNormal);
+            vec3 reflectHitPoint = hitPoint + reflectDir * closestT;
+            color = objectColor * raytracing(reflectHitPoint, reflectDir, min_t, max_t).xyz;
+        }
+    }
+}
 
 vec4 raytracing(in vec3 rayOrigin, in vec3 rayDirection, float min_t, float max_t) {
     vec3 finalColor = backgroundColor;
