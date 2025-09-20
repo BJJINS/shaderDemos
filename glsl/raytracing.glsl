@@ -255,8 +255,8 @@ vec3 pointLight(vec3 color, float intensity, vec3 position, vec3 hitPoint, vec3 
     return color * intensity * attenuation * (diff + spec);
 }
 
-vec3 createRay(vec3 rayOrigin, vec3 target, float d) {
-    vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / u_resolution.y;
+vec3 createRay(vec3 rayOrigin, vec3 target, float d, vec2 offset) {
+    vec2 uv = ((gl_FragCoord.xy + offset) * 2.0 - u_resolution.xy) / u_resolution.y;
     vec3 view = normalize(target - rayOrigin); // 视线方向
     vec3 direction = normalize(vec3(uv, d));
     // 计算相机的坐标系
@@ -396,6 +396,17 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
 }
 
 void main() {
-    vec3 rayDirection = createRay(rayOrigin, target, 2.0);
-    fragColor = vec4(raytracing(rayOrigin, rayDirection), 1.0);
+    vec3 color = vec3(0.0);
+
+    int samples = 2; // 2x2网格采样
+    for (int y = 0; y < samples; y++) {
+        for (int x = 0; x < samples; x++) {
+            // 计算采样偏移量，范围[-0.5, 0.5)
+            vec2 offset = (vec2(x, y) / float(samples)) - 0.5;
+            vec3 rayDirection = createRay(rayOrigin, target, 2.0, offset);
+            color += raytracing(rayOrigin, rayDirection);
+        }
+    }
+    color /= float(samples * samples);
+    fragColor = vec4(color, 1.0);
 }
