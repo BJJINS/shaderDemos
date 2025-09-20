@@ -341,7 +341,7 @@ vec4 rayReflect(in vec3 hitPoint, in vec3 incidentRay, in vec3 normal, float min
     vec3 color = backgroundColor;
     int type = -1;
     float reflectionIntensity = 1.0;
-    float reflectionAttenuation = 0.4; // 每次反射的衰减系数
+    float reflectionAttenuation = 0.2; // 每次反射的衰减系数
 
     for (int i = 0; i < n; i++) {
         HitObject hitObject = raytracingImpl(rayOrigin, reflectRay, minT, maxT);
@@ -384,7 +384,7 @@ vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
             return hitObject.color * shadowFactor;
         }
         vec4 reflectInfo = rayReflect(hitPoint, rayDirection, hitObject.normal, 0.001, 1000.0, 2);
-        if (reflectInfo.w > -1.0 && reflectInfo.w != 1.0) {
+        if (reflectInfo.w > -1.0) {
             hitObject.color = reflectInfo.xyz;
         }
         vec3 ambient = ambientLight(lightColor, .5);
