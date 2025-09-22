@@ -30,6 +30,8 @@ mat4 createTranslationMat(float x, float y, float z) {
 
 // 旋转矩阵
 mat4 createRotationMat(float angle, vec3 axis) {
+    // 归一化旋转轴向量
+    axis = normalize(axis);
     float c = cos(angle);
     float s = sin(angle);
     float t = 1.0 - c;
