@@ -10,7 +10,7 @@ out vec4 fragColor;
 #define RED vec3(1.0,0.0,0.0)
 #define GREEN vec3(0.0,1.0,0.0)
 #define BLUE vec3(0.0,0.0,1.0)
-#define BACKGROUND_COLOR vec3(0.02)
+#define BACKGROUND_COLOR vec3(0.0)
 #define CAMERA_VIEWPORT_DIS 5.0
 
 // 计算UV坐标
@@ -78,6 +78,27 @@ vec2 perspectiveProjection(vec3 p) {
     );
 }
 
+bool pointInTriangle(vec2 a, vec2 b, vec2 c, vec2 p) {
+    vec2 v0 = c - a;
+    vec2 v1 = b - a;
+    vec2 v2 = p - a;
+
+    // 计算点积
+    float dot00 = dot(v0, v0);
+    float dot01 = dot(v0, v1);
+    float dot02 = dot(v0, v2);
+    float dot11 = dot(v1, v1);
+    float dot12 = dot(v1, v2);
+
+    // 计算 barycentric 坐标
+    float invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
+    float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+    float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+    // 检查点是否在三角形内
+    return (u >= 0.0) && (v >= 0.0) && (u + v <= 1.0);
+}
+
 // 画线函数
 vec3 drawLine(vec2 p0, vec2 p1, vec2 p, vec3 color) {
     float a = p1.y - p0.y;
@@ -95,6 +116,14 @@ vec3 drawLine(vec2 p0, vec2 p1, vec2 p, vec3 color) {
     return vec3(0.0);
 }
 
+vec3 drawTriangle(vec2 p0, vec2 p1, vec2 p2, vec2 p, vec3 color) {
+    bool isInTriangle = pointInTriangle(p0, p1, p2, p);
+    if (isInTriangle) {
+        return color;
+    }
+    return BACKGROUND_COLOR;
+}
+
 // 绘制三角形（线框）
 vec3 drawTriangleWireframe(vec2 p0, vec2 p1, vec2 p2, vec2 p, vec3 color) {
     return drawLine(p0, p1, p, color) +
@@ -103,7 +132,7 @@ vec3 drawTriangleWireframe(vec2 p0, vec2 p1, vec2 p2, vec2 p, vec3 color) {
 }
 
 // 绘制立方体 - 修复了相机位置和剔除逻辑
-vec3 drawCube(vec3 center, float size, mat4 modelMatrix, vec2 p) {
+vec3 drawCube(vec3 center, float size, mat4 modelMatrix, vec2 p, bool wireframe) {
     mat4 viewMatrix = createViewMatrix();
     mat4 translate = createTranslationMat(center.x, center.y, center.z);
     modelMatrix = translate * modelMatrix;
@@ -160,8 +189,11 @@ vec3 drawCube(vec3 center, float size, mat4 modelMatrix, vec2 p) {
             else if (i < 8) faceColor = RED; // 右面
             else if (i < 10) faceColor = GREEN; // 下面
             else faceColor = BLUE; // 上面
-
-            cubeColor += drawTriangleWireframe(p0_2d, p1_2d, p2_2d, p, faceColor);
+            if (wireframe) {
+                cubeColor += drawTriangleWireframe(p0_2d, p1_2d, p2_2d, p, faceColor);
+            } else {
+                cubeColor += drawTriangle(p0_2d, p1_2d, p2_2d, p, faceColor);
+            }
         }
     }
 
@@ -177,6 +209,6 @@ void main() {
 
     // 绘制场景
     vec3 color = BACKGROUND_COLOR;
-    color += drawCube(vec3(0.0, 0.0, 0.0), 0.8, rotationMat, uv);
+    color += drawCube(vec3(0.0, 0.0, 0.0), 0.8, rotationMat, uv, false);
     fragColor = vec4(color, 1.0);
 }
