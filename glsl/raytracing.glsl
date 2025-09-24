@@ -232,10 +232,6 @@ vec3 createRay(vec3 rayOrigin, vec3 target, float d) {
     return viewProjectionMatrix * direction;
 }
 
-void shadow(in vec3 hitPoint, in vec3 normal) {
-   
-}
-
 vec3 raytracing(in vec3 rayOrigin, in vec3 rayDirection) {
     // dis表示视口到相机的位置，检查相交的解必须大于dis
     // 如果小于等于dis，表示射线和球体的交点在视口到相机的一侧
