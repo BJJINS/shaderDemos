@@ -13,6 +13,9 @@ out vec4 fragColor;
 #define BACKGROUND_COLOR vec3(0.0)
 #define CAMERA_VIEWPORT_DIS 5.0
 
+// 精度误差容限
+const float EPSILON = 1e-6;
+
 // 计算UV坐标
 vec2 getUV() {
     return 5.0 * (gl_FragCoord.xy - u_resolution.xy * 0.5) / u_resolution.y;
@@ -90,13 +93,18 @@ bool pointInTriangle(vec2 a, vec2 b, vec2 c, vec2 p) {
     float dot11 = dot(v1, v1);
     float dot12 = dot(v1, v2);
 
-    // 计算 barycentric 坐标
-    float invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
-    float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
-    float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+    float denom = dot00 * dot11 - dot01 * dot01;
+
+    // 处理退化三角形（面积接近0）
+    if (abs(denom) < EPSILON) {
+        return false;
+    }
+    float u = (dot11 * dot02 - dot01 * dot12) / denom;
+    float v = (dot00 * dot12 - dot01 * dot02) / denom;
 
     // 检查点是否在三角形内
-    return (u >= 0.0) && (v >= 0.0) && (u + v <= 1.0);
+    // 判断条件：u ≥ 0, v ≥ 0, u + v ≤ 1（允许微小误差）
+    return (u > -EPSILON) && (v > -EPSILON) && (u + v < 1.0 + EPSILON);
 }
 
 // 画线函数
