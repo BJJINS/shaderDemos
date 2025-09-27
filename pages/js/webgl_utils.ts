@@ -39,9 +39,10 @@ export const createProgramAttribute = (
   const attributeLocation = gl.getAttribLocation(program, name);
   const buffer = gl.createBuffer()!;
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  // 先写入数据，再设置顶点属性指针
+  gl.bufferData(gl.ARRAY_BUFFER, srcData, gl.STATIC_DRAW);
   gl.enableVertexAttribArray(attributeLocation);
   gl.vertexAttribPointer(attributeLocation, size, type, false, 0, 0);
-  gl.bufferData(gl.ARRAY_BUFFER, srcData, gl.STATIC_DRAW);
 };
 
 // uniform必须在gl.useProgram(program)之后
@@ -106,22 +107,24 @@ export function mult(num: number, a: Vec2 | Vec3) {
   }
 }
 
+function isVec3(v: Vec2 | Vec3): v is Vec3 {
+  return v.type === "vec3";
+}
 // 将Vec2|Vec3[] 改成 Float32Array
-export function flatten(arr: Vec2[]): Float32Array<ArrayBuffer>;
-export function flatten(arr: Vec3[]): Float32Array<ArrayBuffer>;
-export function flatten(arr: Vec2[] | Vec3[]): Float32Array<ArrayBuffer> {
-  const isVec2 = arr[0].type === "vec2";
-  const res = new Float32Array(isVec2 ? arr.length * 2 : arr.length * 3);
-  return arr.reduce<Float32Array<ArrayBuffer>>((res, item, index) => {
-    if (isVec2) {
-      const i = index * 2;
-      res[i] = item.x;
-      res[i + 1] = item.y;
-    } else {
+export function flatten(arr: Vec2[]): Float32Array;
+export function flatten(arr: Vec3[]): Float32Array;
+export function flatten(arr: Vec2[] | Vec3[]): Float32Array {
+  const res = new Float32Array(arr[0].type === "vec2" ? arr.length * 2 : arr.length * 3);
+  return arr.reduce((res, item, index) => {
+    if (isVec3(item)) {
       const i = index * 3;
       res[i] = item.x;
       res[i + 1] = item.y;
-      res[i + 2] = item.y;
+      res[i + 2] = item.z;
+    } else {
+      const i = index * 2;
+      res[i] = item.x;
+      res[i + 1] = item.y;
     }
     return res;
   }, res);
