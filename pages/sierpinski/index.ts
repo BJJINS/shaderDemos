@@ -96,19 +96,30 @@ function sierpinski3D() {
   return { positions, colors };
 }
 
+function sierpinski2() {
+  const positions: Vec2[] = [];
+  const num = 10000;
+  const vertices = [vec2(0.0, 0.5), vec2(0.5, -0.5), vec2(-0.5, -0.5)];
+  const ab = mix(vertices[0], vertices[1], 0.5);
+  const ac = mix(vertices[0], vertices[2], 0.5);
+
+  let p = mix(ab, ac, 0.5);
+  positions.push(p);
+  for (let i = 0; i < num-1; i++) {
+    const j = Math.floor(Math.random() * 3);
+    p = mix(vertices[j], p, 0.5);
+    positions.push(p);
+  }
+  return positions;
+}
+
 const gl = initWebGl2();
 const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
 const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
 const program = createProgram(gl, vertexShader, fragmentShader)!;
 
-// 在创建program和属性之后，渲染函数之前添加深度测试启用代码
 const { positions, colors } = sierpinski3D();
 createProgramAttribute(gl, program, 3, flatten(positions), "aPosition", gl.FLOAT);
 createProgramAttribute(gl, program, 3, flatten(colors), "aColor", gl.FLOAT);
 
-const render = () => {
-  gl.drawArrays(gl.TRIANGLES, 0, positions.length);
-  // requestAnimationFrame(render);
-};
-
-render();
+gl.drawArrays(gl.TRIANGLES, 0, positions.length);
