@@ -7,13 +7,14 @@ import {
   add,
   mult,
   flatten,
+  mix,
 } from "../js/webgl_utils.ts";
 
 import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "././fragment.glsl";
 
 function sierpinski() {
-  const num = 5000;
+  const num = 100000;
   const positions = [];
   const vertices = [vec2(-1, -1), vec2(0, 1), vec2(1, -1)];
   const u = add(vertices[0], vertices[1]);
@@ -29,7 +30,27 @@ function sierpinski() {
   return positions;
 }
 
-const positions = sierpinski();
+function sierpinski2() {
+  const positions: Vec2[] = [];
+  function divideTriangle(a: Vec2, b: Vec2, c: Vec2, count: number) {
+    if (count === 0) {
+      positions.push(a, b, c);
+    } else {
+      count--;
+      const ab = mix(a, b, 0.5);
+      const ac = mix(a, c, 0.5);
+      const bc = mix(b, c, 0.5);
+      divideTriangle(ab, ac, a, count);
+      divideTriangle(ab, bc, b, count);
+      divideTriangle(ac, bc, c, count);
+    }
+  }
+
+  divideTriangle(vec2(-0.8, -0.8), vec2(0, 0.8), vec2(0.8, -0.8), 10);
+  return positions;
+}
+
+const positions = sierpinski2();
 
 const gl = initWebGl2();
 

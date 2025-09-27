@@ -126,3 +126,20 @@ export function flatten(arr: Vec2[] | Vec3[]): Float32Array<ArrayBuffer> {
     return res;
   }, res);
 }
+
+export function mix(a: Vec2, b: Vec2, num: number): Vec2;
+export function mix(a: Vec3, b: Vec3, num: number): Vec3;
+export function mix(a: Vec2 | Vec3, b: Vec2 | Vec3, num: number): Vec2 | Vec3 {
+  function mixImpl(a: number, b: number) {
+    return num * a + (1 - num) * b;
+  }
+
+  if (a.type === "vec2" && b.type === "vec2") {
+    return vec2(mixImpl(a.x, b.x), mixImpl(a.y, b.y));
+  }
+
+  if (a.type === "vec3" && b.type === "vec3") {
+    return vec3(mixImpl(a.x, b.x), mixImpl(a.y, b.y), mixImpl(a.z, b.z));
+  }
+  throw new Error("a and b must be the same vector type");
+}
