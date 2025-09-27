@@ -1,8 +1,4 @@
-export const createShader = (
-  gl: WebGL2RenderingContext,
-  type: GLenum,
-  source: string
-) => {
+export const createShader = (gl: WebGL2RenderingContext, type: GLenum, source: string) => {
   const shader = gl.createShader(type)!;
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
@@ -25,6 +21,7 @@ export const createProgram = (
   gl.linkProgram(program); // 连结 shader
   const ok = gl.getProgramParameter(program, gl.LINK_STATUS); // 检查是否成功连结 shader
   if (ok) {
+    gl.useProgram(program);
     return program;
   }
   console.error(gl.getProgramInfoLog(program));
@@ -48,14 +45,10 @@ export const createProgramAttribute = (
 };
 
 // uniform必须在gl.useProgram(program)之后
-export const createUniformResolution = (
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-) => {
+export const createUniformResolution = (gl: WebGL2RenderingContext, program: WebGLProgram) => {
   const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
   gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
-}
-
+};
 
 let textUnit = 0;
 export const createUniformTexture = (
@@ -72,4 +65,64 @@ export const createUniformTexture = (
   gl.activeTexture(gl.TEXTURE0 + textUnit);
   gl.uniform1i(location, textUnit);
   textUnit++;
+};
+
+export function vec2(x?: number, y?: number): Vec2 {
+  return {
+    x: x || 0,
+    y: y || 0,
+    type: "vec2",
+  };
+}
+
+export function vec3(x?: number, y?: number, z?: number): Vec3 {
+  return {
+    x: x || 0,
+    y: y || 0,
+    z: z || 0,
+    type: "vec3",
+  };
+}
+
+export function add(a: Vec2, b: Vec2): Vec2;
+export function add(a: Vec3, b: Vec3): Vec3;
+export function add(a: Vec2 | Vec3, b: Vec2 | Vec3) {
+  if (a.type === "vec2" && b.type === "vec2") {
+    return vec2(a.x + b.x, a.y + b.y);
+  }
+  if (a.type === "vec3" && b.type === "vec3") {
+    return vec3(a.x + b.x, a.y + b.y, a.z + b.z);
+  }
+}
+
+export function mult(num: number, a: Vec2): Vec2;
+export function mult(num: number, a: Vec3): Vec3;
+export function mult(num: number, a: Vec2 | Vec3) {
+  if (a.type === "vec2") {
+    return vec2(num * a.x, num * a.y);
+  }
+  if (a.type === "vec3") {
+    return vec3(num * a.x, num * a.y, num * a.z);
+  }
+}
+
+// 将Vec2|Vec3[] 改成 Float32Array
+export function flatten(arr: Vec2[]): Float32Array<ArrayBuffer>;
+export function flatten(arr: Vec3[]): Float32Array<ArrayBuffer>;
+export function flatten(arr: Vec2[] | Vec3[]): Float32Array<ArrayBuffer> {
+  const isVec2 = arr[0].type === "vec2";
+  const res = new Float32Array(isVec2 ? arr.length * 2 : arr.length * 3);
+  return arr.reduce<Float32Array<ArrayBuffer>>((res, item, index) => {
+    if (isVec2) {
+      const i = index * 2;
+      res[i] = item.x;
+      res[i + 1] = item.y;
+    } else {
+      const i = index * 3;
+      res[i] = item.x;
+      res[i + 1] = item.y;
+      res[i + 2] = item.y;
+    }
+    return res;
+  }, res);
 }
