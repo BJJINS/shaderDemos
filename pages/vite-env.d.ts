@@ -18,3 +18,12 @@ interface Vec3 {
   z: number;
   type: "vec3";
 }
+
+
+interface Vec4 {
+  x: number;
+  y: number;
+  z: number;
+  w: number;
+  type: "vec4";
+}

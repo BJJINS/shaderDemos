@@ -85,6 +85,16 @@ export function vec3(x?: number, y?: number, z?: number): Vec3 {
   };
 }
 
+export function vec4(x?: number, y?: number, z?: number, w?: number): Vec4 {
+  return {
+    x: x || 0,
+    y: y || 0,
+    z: z || 0,
+    w: w || 1,
+    type: "vec4",
+  };
+}
+
 export function add(a: Vec2, b: Vec2): Vec2;
 export function add(a: Vec3, b: Vec3): Vec3;
 export function add(a: Vec2 | Vec3, b: Vec2 | Vec3) {
@@ -107,16 +117,32 @@ export function mult(num: number, a: Vec2 | Vec3) {
   }
 }
 
-function isVec3(v: Vec2 | Vec3): v is Vec3 {
+function isVec3(v: Vec2 | Vec3 | Vec4): v is Vec3 {
   return v.type === "vec3";
+}
+function isVec4(v: Vec2 | Vec3 | Vec4): v is Vec4 {
+  return v.type === "vec4";
 }
 // 将Vec2|Vec3[] 改成 Float32Array
 export function flatten(arr: Vec2[]): Float32Array;
 export function flatten(arr: Vec3[]): Float32Array;
-export function flatten(arr: Vec2[] | Vec3[]): Float32Array {
-  const res = new Float32Array(arr[0].type === "vec2" ? arr.length * 2 : arr.length * 3);
+export function flatten(arr: Vec4[]): Float32Array;
+export function flatten(arr: Vec2[] | Vec3[] | Vec4[]): Float32Array {
+  const lenMap = {
+    vec2: 2,
+    vec3: 3,
+    vec4: 4,
+  };
+  const len = lenMap[arr[0].type];
+  const res = new Float32Array(len * arr.length);
   return arr.reduce((res, item, index) => {
-    if (isVec3(item)) {
+    if (isVec4(item)) {
+      const i = index * 4;
+      res[i] = item.x;
+      res[i + 1] = item.y;
+      res[i + 2] = item.z;
+      res[i + 3] = item.w;
+    } else if (isVec3(item)) {
       const i = index * 3;
       res[i] = item.x;
       res[i + 1] = item.y;
