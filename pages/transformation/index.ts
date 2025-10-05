@@ -2,6 +2,7 @@ import {
   createProgram,
   createProgramAttribute,
   createShader,
+  createUniformResolution,
   flatten,
   vec3,
   vec4,
@@ -15,6 +16,15 @@ const gl = initWebGl2();
 const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
 const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
 const program = createProgram(gl, vertexShader, fragmentShader)!;
+
+
+var axis = 0;
+var xAxis = 0;
+var yAxis =1;
+var zAxis = 2;
+var theta = [0, 0, 0];
+var flag = true;
+var numElements = 36;
 
 const vertices = [
     vec3(-0.5, -0.5,  0.5),
@@ -57,12 +67,31 @@ const iBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, iBuffer);
 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices), gl.STATIC_DRAW);
 
-const cBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, flatten(vertexColors), gl.STATIC_DRAW);
-
 createProgramAttribute(gl, program, 4, flatten(vertexColors), "aColor", gl.FLOAT);
 createProgramAttribute(gl, program, 3, flatten(vertices), "aPosition", gl.FLOAT);
 
+const thetaLoc = gl.getUniformLocation(program, "uTheta");
 
-gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_BYTE, 0);
+
+gl.drawElements(gl.TRIANGLES, numElements, gl.UNSIGNED_BYTE, 0);
+
+    document.getElementById( "xButton" )!.onclick = function () {
+        axis = xAxis;
+    };
+    document.getElementById( "yButton" )!.onclick = function () {
+        axis = yAxis;
+    };
+    document.getElementById( "zButton" )!.onclick = function () {
+        axis = zAxis;
+    };
+    document.getElementById("ButtonT")!.onclick = function(){flag = !flag;};
+
+function render() {
+    if(flag) theta[axis] += 2.0;
+    gl.uniform3fv(thetaLoc, theta);
+
+    gl.drawElements(gl.TRIANGLES, numElements, gl.UNSIGNED_BYTE, 0);
+    requestAnimationFrame(render);
+}
+
+render();
