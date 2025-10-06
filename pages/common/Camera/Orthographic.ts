@@ -2,7 +2,7 @@ import global from "../global";
 import Camera from "./Camera";
 
 class OrthographicCamera extends Camera {
-  matrix: Float32Array;
+  matrix: Array<number>;
   width: number;
   height: number;
   depth: number;
@@ -15,12 +15,12 @@ class OrthographicCamera extends Camera {
     global.camera = this;
   }
   projection(){
-    return new Float32Array([
+    return [
         2 / this.width, 0,                0,              0,
         0,              -2 / this.height, 0,              0,
         0,              0,                2 / this.depth, 0,
         -1,             1,                1,              1,
-    ]);
+    ];
   }
 }
 

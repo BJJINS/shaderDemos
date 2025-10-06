@@ -29,7 +29,7 @@ class World {
     }
     gl.clearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // 同时清除颜色和深度缓冲区
     global.gl = gl;
   }
   createCanvas() {
@@ -53,7 +53,7 @@ class World {
       this.canvas.height = h;
       if (global.gl) {
         global.gl.viewport(0, 0, w, h);
-        global.gl.clear(global.gl.COLOR_BUFFER_BIT);
+        global.gl.clear(global.gl.COLOR_BUFFER_BIT | global.gl.DEPTH_BUFFER_BIT); // 同时清除两个缓冲区
       }
     });
   }
