@@ -1,19 +1,21 @@
 import { createProgram, createProgramAttribute, createShader } from "../utils";
 import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
+import global from "../global";
 
 interface CubeParams {
-  gl: WebGL2RenderingContext;
   width: number;
   height: number;
   depth: number;
 }
 
 class Cube {
-  gl: WebGL2RenderingContext;
   constructor(params: CubeParams) {
-    const { gl, width, height, depth } = params;
-    this.gl = gl;
+    const { width, height, depth } = params;
+    const { gl } = global;
+    if (!gl) {
+      throw new Error("gl is null");
+    }
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     const program = createProgram(gl, vertexShader, fragmentShader)!;
@@ -132,7 +134,11 @@ class Cube {
 
   }
   render() {
-    this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_BYTE, 0);
+    const { gl } = global;
+    if (!gl) {
+      throw new Error("gl is null");
+    }
+    gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_BYTE, 0);
   }
 }
 

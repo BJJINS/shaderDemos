@@ -1,3 +1,4 @@
+import global from "./global";
 import { Vec4 } from "./Vector";
 
 interface WorldParams {
@@ -7,14 +8,13 @@ interface WorldParams {
 }
 
 class World {
-  gl: WebGL2RenderingContext;
   canvas: HTMLCanvasElement;
   pixelRatio: number;
   constructor(params?: WorldParams) {
     const { clearColor = new Vec4(1, 1, 1, 1), depthTest = true, cullFace = true } = params || {};
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.canvas = this.createCanvas();
-    this.gl = this.initWebgl2(clearColor, depthTest, cullFace);
+    this.initWebgl2(clearColor, depthTest, cullFace);
     this.resize();
   }
   initWebgl2(clearColor: Vec4, depthTest: boolean = true, cullFace: boolean = true) {
@@ -30,7 +30,7 @@ class World {
     gl.clearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    return gl;
+    global.gl = gl;
   }
   createCanvas() {
     const canvas = document.createElement("canvas");
@@ -43,10 +43,18 @@ class World {
 
   resize() {
     window.addEventListener("resize", () => {
-      this.gl.canvas.width = window.innerWidth * this.pixelRatio;
-      this.gl.canvas.height = window.innerHeight * this.pixelRatio;
-      this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+      this.canvas.setAttribute(
+        "style",
+        `width:${window.innerWidth}px;height:${window.innerHeight}px`
+      );
+      const w = window.innerWidth * this.pixelRatio;
+      const h = window.innerHeight * this.pixelRatio;
+      this.canvas.width = w;
+      this.canvas.height = h;
+      if (global.gl) {
+        global.gl.viewport(0, 0, w, h);
+        global.gl.clear(global.gl.COLOR_BUFFER_BIT);
+      }
     });
   }
 }
