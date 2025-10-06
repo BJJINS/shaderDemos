@@ -1,11 +1,14 @@
 #version 300 es
 
-in vec3 aPosition;
+in vec4 aPosition;
 in vec3 aColor;
+
+uniform mat4 uProjectionMatrix;
 
 out vec3 vColor;
 
 void main() {
     vColor = aColor;
-    gl_Position = vec4(aPosition.x, aPosition.y, aPosition.z - 1.0, 1.0);
+    vec4 position = uProjectionMatrix * aPosition;
+    gl_Position = position;
 }
