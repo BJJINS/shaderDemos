@@ -11,14 +11,24 @@ interface CubeParams {
 
 class Cube {
   program: WebGLProgram;
+  rotationXYZ: [number, number, number] = [0, 0, 0];
+  rotationUniformLoc: WebGLUniformLocation;
   constructor(params: CubeParams) {
     const { width, height, depth } = params;
     const { gl } = global;
     if (!gl) {
       throw new Error("gl is null");
     }
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
+    const vertexShader = createShader(
+      gl,
+      gl.VERTEX_SHADER,
+      vertexShaderSource,
+    )!;
+    const fragmentShader = createShader(
+      gl,
+      gl.FRAGMENT_SHADER,
+      fragmentShaderSource,
+    )!;
     this.program = createProgram(gl, vertexShader, fragmentShader)!;
     const w = width / 2;
     const h = height / 2;
@@ -115,7 +125,7 @@ class Cube {
       0, 1, 2, 2, 1, 3,
 
       // 背面 (4-7)
-      4, 5, 6, 6, 5, 7,
+      4, 6, 5, 6, 7, 5,
 
       // 左面 (8-11)
       8, 9, 10, 10, 9, 11,
@@ -132,7 +142,11 @@ class Cube {
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ELEMENT_ARRAY_BUFFER,
+      new Uint8Array(indices),
+      gl.STATIC_DRAW,
+    );
 
     const vertexColors = new Float32Array([
       // 正面 - 红色 (4个顶点)
@@ -220,14 +234,34 @@ class Cube {
       1.0, // 顶点23
     ]);
 
-    createProgramAttribute(gl, this.program, 3, vertices, "aPosition", gl.FLOAT);
-    createProgramAttribute(gl, this.program, 3, vertexColors, "aColor", gl.FLOAT);
-    this.projectionMatrix();
+    createProgramAttribute(
+      gl,
+      this.program,
+      3,
+      vertices,
+      "aPosition",
+      gl.FLOAT,
+    );
+    createProgramAttribute(
+      gl,
+      this.program,
+      3,
+      vertexColors,
+      "aColor",
+      gl.FLOAT,
+    );
+
+    this.rotationUniformLoc = gl.getUniformLocation(this.program, "uRotation")!;
   }
   render() {
     const { gl } = global;
     if (!gl) {
       throw new Error("gl is null");
+    }
+
+    const [x, y, z] = this.rotationXYZ;
+    if (x > 0 || y > 0 || z > 0) {
+      gl.uniform3fv(this.rotationUniformLoc, this.rotationXYZ);
     }
     gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_BYTE, 0);
   }
@@ -241,6 +275,15 @@ class Cube {
     }
     const matrixLoc = gl.getUniformLocation(this.program, "uProjectionMatrix");
     gl.uniformMatrix4fv(matrixLoc, false, camera.matrix);
+  }
+  rotateY(angle: number) {
+    this.rotationXYZ[1] = angle;
+  }
+  rotateX(angle: number) {
+    this.rotationXYZ[0] = angle;
+  }
+  rotateZ(angle: number) {
+    this.rotationXYZ[2] = angle;
   }
 }
 

@@ -24,9 +24,9 @@ class World {
     if (depthTest) {
       gl.enable(gl.DEPTH_TEST); // 开启深度测试
     }
-    if (cullFace) {
-      gl.enable(gl.CULL_FACE); // 开启面剔除
-    }
+    // if (cullFace) {
+    //   gl.enable(gl.CULL_FACE); // 开启面剔除
+    // }
     gl.clearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // 同时清除颜色和深度缓冲区
