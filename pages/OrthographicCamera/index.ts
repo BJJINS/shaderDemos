@@ -16,8 +16,8 @@ const render = () => {
   cube.render();
   angle += 2;
   // cube.rotateY(angle);
-  // cube.rotateX(angle);
-  cube.rotateZ(angle);
+  cube.rotateX(angle);
+  // cube.rotateZ(angle);
 
   requestAnimationFrame(render);
 };
