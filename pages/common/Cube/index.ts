@@ -242,17 +242,6 @@ class Cube {
     }
     gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_BYTE, 0);
   }
-  projectionMatrix() {
-    const { camera, gl } = global;
-    if (!camera) {
-      throw new Error("camera is null");
-    }
-    if (!gl) {
-      throw new Error("gl is null");
-    }
-    const matrixLoc = gl.getUniformLocation(this.program, "uProjectionMatrix");
-    gl.uniformMatrix4fv(matrixLoc, false, camera.matrix);
-  }
   rotateY(angle: number) {
     this.rotationXYZ[1] = angle;
   }
