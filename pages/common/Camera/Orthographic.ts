@@ -1,26 +1,21 @@
-import global from "../global";
+import { Vec3 } from "../Vector";
 import Camera from "./Camera";
 
 class OrthographicCamera extends Camera {
-  matrix: Array<number>;
-  width: number;
-  height: number;
-  depth: number;
-  constructor(width: number, height: number, depth: number) {
+  position = new Vec3(0, 0, 0);
+  constructor() {
     super("orthographic");
-    this.width = width;
-    this.height = height;
-    this.depth = depth;
-    this.matrix = this.projection();
-    global.camera = this;
   }
-  projection(){
+  lookAt(target: Vec3) {
+    target.sub(this.position).normalize();
+    const n = target;
+    const up = new Vec3(0, 1, 0);
+    const v = n.cross(up);
+    const u= v.cross(n);
     return [
-        2 / this.width, 0,                0,              0,
-        0,              -2 / this.height, 0,              0,
-        0,              0,                2 / this.depth, 0,
-        -1,             1,                1,              1,
-    ];
+    
+
+    ]
   }
 }
 
