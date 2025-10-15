@@ -32,12 +32,12 @@ void rotation() {
 }
 
 // quaternion multiplier
-vec4 multq(vec4 a, vec4 b) {
+vec4 mult_q(vec4 a, vec4 b) {
     return (vec4(a.x * b.x - dot(a.yzw, b.yzw), a.x * b.yzw + b.x * a.yzw + cross(b.yzw, a.yzw)));
 }
 
 // inverse quaternion
-vec4 invq(vec4 a) {
+vec4 inv_q(vec4 a) {
     return (vec4(a.x, -a.yzw) / dot(a, a));
 }
 void rotation_quaternion() {
@@ -48,9 +48,9 @@ void rotation_quaternion() {
     vec4 rx = vec4(c.x, s.x, 0.0, 0.0); // x 轴旋转
     vec4 ry = vec4(c.y, 0.0, s.y, 0.0); // y 轴旋转
     vec4 rz = vec4(c.z, 0.0, 0.0, s.z); // z 轴旋转
-    vec4 r = multq(rx, multq(ry, rz));
+    vec4 r = mult_q(rx, mult_q(ry, rz));
     p = vec4(0.0, aPosition.xyz); // input point quaternion
-    p = multq(r, multq(p, invq(r))); // rotated point quaternion
+    p = mult_q(r, mult_q(p, inv_q(r))); // rotated point quaternion
     gl_Position = vec4(p.yzw, 1.0); // convert back to homogeneous coordinates
 }
 
