@@ -37,8 +37,23 @@ class Vec4 {
   }
 }
 
-export {
-    Vec2,
-    Vec3,
-    Vec4,
+function dot(a: Vec3, b: Vec3) {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
+function negate(v: Vec2 | Vec3) {
+  if (v.type === "vec2") {
+    return new Vec2(-v.x, -v.y);
+  }
+  return new Vec3(-v.x, -v.y, -v.z);
+}
+
+function cross(a: Vec3, b: Vec3) {
+  return new Vec3(
+    a.y * b.z - a.z * b.y,
+    a.z * b.x - a.x * b.z,
+    a.x * b.y - a.y * b.x
+  );
+}
+
+export { Vec2, Vec3, Vec4, dot, cross, negate};
