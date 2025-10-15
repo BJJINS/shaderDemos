@@ -7,15 +7,24 @@ class OrthographicCamera extends Camera {
     super("orthographic");
   }
   lookAt(target: Vec3) {
-    target.sub(this.position).normalize();
-    const n = target;
-    const up = new Vec3(0, 1, 0);
-    const v = n.cross(up);
-    const u= v.cross(n);
-    return [
-    
+    const view = target.sub(this.position).normalize();
+    let up = new Vec3(0, 1, 0);
+    const right = view.cross(up);
+    up = right.cross(view);
+    view.negate();
+    // 将世界标架转换为相机标架
+    // 先旋转再平移
+    // -this.position.dot(right)、-this.position.dot(up)、-this.position.dot(view)
+    // 分别是position在相机标架下的坐标，添加负号表示将该点转成原点(0,0,0)
+    const viewMatrix = [
+      right.x,right.y,right.z,-this.position.dot(right),
+      up.x,   up.y,   up.z,   -this.position.dot(up),
+      view.x, view.y, view.z, -this.position.dot(view),
+      0, 0, 0, 1,
+    ];
 
-    ]
+    console.log('viewMatrix :>> ', viewMatrix);
+    return viewMatrix;
   }
 }
 

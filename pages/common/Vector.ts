@@ -1,11 +1,13 @@
 class Vec {
   type: string;
-  constructor(type: string) {
+  x: number;
+  y: number;
+  constructor(x: number, y: number, type: string) {
     this.type = type;
+    this.x = x;
+    this.y = y;
   }
-  isVec2(v: Vec): v is Vec2 {
-    return v.type === "vec2";
-  }
+
   isVec3(v: Vec): v is Vec3 {
     return v.type === "vec3";
   }
@@ -13,36 +15,36 @@ class Vec {
     return v.type === "vec4";
   }
 
-  sub(v: Vec2): Vec2;
-  sub(v: Vec3): Vec3;
-  sub(v: Vec2 | Vec3) {
-    if (this.isVec2(v) && this.isVec2(this)) {
-      return new Vec2(this.x - v.x, this.y - v.y);
-    }
+  sub(v: Vec): this {
+    this.x -= v.x;
+    this.y -= v.y;
     if (this.isVec3(v) && this.isVec3(this)) {
-      return new Vec3(this.x - v.x, this.y - v.y, this.z - v.z);
+      if (this.z !== 0) {
+        this.z -= v.z;
+      }
     }
+    return this;
   }
 
-  dot(v: Vec3) {
+  dot(v: Vec3): number {
     if (this.isVec3(this)) {
       return this.x * v.x + this.y * v.y + this.z * v.z;
     }
-    throw "dot() this is not Vec3"
+    throw "dot(): this is not Vec3";
   }
 
-  negate() {
-    if (this.isVec2(this)) {
-      this.x = -this.x;
-      this.y = -this.y;
-    } else if (this.isVec3(this) || this.isVec4(this)) {
+  negate(): this {
+    this.x = -this.x;
+    this.y = -this.y;
+    if (this.isVec3(this) || this.isVec4(this)) {
       this.x = -this.x;
       this.y = -this.y;
       this.z = -this.z;
     }
+    return this;
   }
 
-  cross(v: Vec3) {
+  cross(v: Vec3): Vec3 {
     if (this.isVec3(this)) {
       return new Vec3(
         this.y * v.z - this.z * v.y,
@@ -54,37 +56,25 @@ class Vec {
   }
 
   length() {
-    if (this.isVec2(this)) {
+    if (this.isVec3(this)) {
+      return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    } else {
       return Math.sqrt(this.x * this.x + this.y * this.y);
-    } else {
-      const v = this as unknown as Vec3;
-      return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
     }
   }
 
-  normalize() {
+  normalize(): this {
     const len = this.length();
-    if (this.isVec2(this)) {
-      this.x /= len;
-      this.y /= len;
-    } else {
-      const v = this as unknown as Vec3;
-      v.x /= len;
-      v.y /= len;
-      v.z /= len;
-    }
+    this.x /= len;
+    this.y /= len;
+    if (this.isVec3(this)) {
+      this.z /= len;
+    } 
+    return this;
   }
 }
 
-class Vec2 extends Vec {
-  x: number;
-  y: number;
-  constructor(x: number, y: number, type = "vec2") {
-    super(type);
-    this.x = x;
-    this.y = y;
-  }
-}
+const Vec2 = Vec;
 
 class Vec3 extends Vec2 {
   z: number;
