@@ -1,4 +1,5 @@
 import global from "./global";
+import Object3D from "./Object3D";
 import { Vec4 } from "./Vector";
 
 interface WorldParams {
@@ -6,11 +7,12 @@ interface WorldParams {
   depthTest?: boolean;
 }
 
-class World {
+class World extends Object3D {
   canvas: HTMLCanvasElement;
   pixelRatio: number;
   constructor(params?: WorldParams) {
-    const { clearColor = new Vec4(1, 1, 1, 1)} = params || {};
+    super();
+    const { clearColor = new Vec4(1, 1, 1, 1) } = params || {};
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.canvas = this.createCanvas();
     this.initWebgl2(clearColor);
@@ -36,7 +38,6 @@ class World {
     document.body.appendChild(canvas);
     return canvas;
   }
-
   resize() {
     window.addEventListener("resize", () => {
       this.canvas.setAttribute(
@@ -52,6 +53,14 @@ class World {
         global.gl.clear(global.gl.COLOR_BUFFER_BIT | global.gl.DEPTH_BUFFER_BIT); // 同时清除两个缓冲区
       }
     });
+  }
+  render() {
+    const { gl } = global;
+    if (!gl) {
+      throw new Error("webgl2 not initialized");
+    }
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    this.children.forEach((child) => child.render());
   }
 }
 

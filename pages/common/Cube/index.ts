@@ -3,6 +3,7 @@ import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
 import global from "../global";
 import { Vec4 } from "../Vector";
+import Object3D from "../Object3D";
 
 interface CubeParams {
   width: number;
@@ -10,13 +11,13 @@ interface CubeParams {
   depth: number;
 }
 
-class Cube {
-  rotationXYZ: [number, number, number] = [0, 0, 0];
+class Cube extends Object3D {
   quaternion = true;
   defines = "";
   positions = Array<number>();
   colors = Array<number>();
   constructor(params: CubeParams) {
+    super();
     const { width, height, depth } = params;
     const w = width / 2;
     const h = height / 2;
@@ -63,9 +64,9 @@ class Cube {
   initialRotation(program: WebGLProgram) {
     const { gl } = global;
     const rotationUniformLoc = gl!.getUniformLocation(program, "uRotation")!;
-    const [x, y, z] = this.rotationXYZ;
+    const [x, y, z] = this.rotation;
     if (x > 0 || y > 0 || z > 0) {
-      gl!.uniform3fv(rotationUniformLoc, this.rotationXYZ);
+      gl!.uniform3fv(rotationUniformLoc, this.rotation);
     }
   }
 
@@ -90,13 +91,13 @@ class Cube {
     gl.drawArrays(gl.TRIANGLES, 0, 36);
   }
   rotateY(angle: number) {
-    this.rotationXYZ[1] = angle;
+    this.rotation[1] = angle;
   }
   rotateX(angle: number) {
-    this.rotationXYZ[0] = angle;
+    this.rotation[0] = angle;
   }
   rotateZ(angle: number) {
-    this.rotationXYZ[2] = angle;
+    this.rotation[2] = angle;
   }
   definesControl() {
     if (this.quaternion) {

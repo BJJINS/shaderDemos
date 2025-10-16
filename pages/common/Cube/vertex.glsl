@@ -55,20 +55,13 @@ void rotation_quaternion() {
 }
 
 
-mat4 t = mat4(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.5, 1.0);
-
 void main() {
     vColor = aColor;
-    // #ifdef ENABLE_QUATERNION
-    // rotation_quaternion();
-    // #else
-    // rotation();
-    // #endif
+    #ifdef ENABLE_QUATERNION
+    rotation_quaternion();
+    #else
+    rotation();
+    #endif
 
-
-    gl_Position = t * aPosition;
+    // gl_Position = aPosition;
 }

@@ -1,4 +1,3 @@
-
 interface Global {
   gl?: WebGL2RenderingContext;
 }
