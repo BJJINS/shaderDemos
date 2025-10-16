@@ -3,8 +3,15 @@ import Camera from "./Camera";
 
 class OrthographicCamera extends Camera {
   position = new Vec3(0, 0, 0);
-  constructor() {
+  projectionMatrix: number[] = [];
+  constructor(left:number, right:number, bottom:number, top:number, near:number, far:number) {
     super("orthographic");
+    this.projectionMatrix = [
+      2/(right-left),0,0,0,
+      0,2/(top - bottom),0,0,
+      0,0,-2/(far-near),0,
+      0,0,0,1,
+    ]
   }
   lookAt(target: Vec3) {
     const view = target.sub(this.position).normalize();

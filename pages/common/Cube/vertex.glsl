@@ -54,12 +54,21 @@ void rotation_quaternion() {
     gl_Position = vec4(p.yzw, 1.0); // convert back to homogeneous coordinates
 }
 
+
+mat4 t = mat4(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.5, 1.0);
+
 void main() {
     vColor = aColor;
-    #ifdef ENABLE_QUATERNION
-        rotation_quaternion();
-    #else
-        rotation();
-    #endif
-    gl_Position.z = -gl_Position.z;
+    // #ifdef ENABLE_QUATERNION
+    // rotation_quaternion();
+    // #else
+    // rotation();
+    // #endif
+
+
+    gl_Position = t * aPosition;
 }
