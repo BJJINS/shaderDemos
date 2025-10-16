@@ -4,29 +4,25 @@ import { Vec4 } from "./Vector";
 interface WorldParams {
   clearColor?: Vec4;
   depthTest?: boolean;
-  cullFace?: boolean;
 }
 
 class World {
   canvas: HTMLCanvasElement;
   pixelRatio: number;
   constructor(params?: WorldParams) {
-    const { clearColor = new Vec4(1, 1, 1, 1), depthTest = true, cullFace = true } = params || {};
+    const { clearColor = new Vec4(1, 1, 1, 1), depthTest = true } = params || {};
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.canvas = this.createCanvas();
-    this.initWebgl2(clearColor, depthTest, cullFace);
+    this.initWebgl2(clearColor, depthTest);
     this.resize();
   }
-  initWebgl2(clearColor: Vec4, depthTest: boolean = true, cullFace: boolean = true) {
+  initWebgl2(clearColor: Vec4, depthTest: boolean = true) {
     const gl = this.canvas.getContext("webgl2", {
       antialias: this.pixelRatio < 2,
     })!;
     if (depthTest) {
       gl.enable(gl.DEPTH_TEST); // 开启深度测试
     }
-    // if (cullFace) {
-    //   gl.enable(gl.CULL_FACE); // 开启面剔除
-    // }
     gl.clearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // 同时清除颜色和深度缓冲区

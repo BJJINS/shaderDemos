@@ -23,7 +23,6 @@ class OrthographicCamera extends Camera {
       0, 0, 0, 1,
     ];
 
-    console.log('viewMatrix :>> ', viewMatrix);
     return viewMatrix;
   }
 }
