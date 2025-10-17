@@ -6,6 +6,8 @@ in vec4 aPosition;
 in vec3 aColor;
 
 uniform vec3 uRotation;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 out vec3 vColor;
 
@@ -57,9 +59,11 @@ void rotation_quaternion() {
 
 void main() {
     vColor = aColor;
-    #ifdef ENABLE_QUATERNION
-    rotation_quaternion();
-    #else
-    rotation();
-    #endif
+    // #ifdef ENABLE_QUATERNION
+    // rotation_quaternion();
+    // #else
+    // rotation();
+    // #endif
+
+    gl_Position = uProjectionMatrix * uViewMatrix * aPosition;
 }

@@ -7,6 +7,10 @@ abstract class Matrix {
   }
   abstract transpose(): Matrix;
   abstract mult(m: Matrix): this;
+
+  glUniformArray() {
+    return new Float32Array(this.matrix);
+  }
 }
 
 

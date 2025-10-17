@@ -1,7 +1,7 @@
 import { createProgram, createProgramAttribute, createShader } from "../utils";
 import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
-import { getGL } from "../global";
+import { getCamera, getGL } from "../global";
 import { Vec4 } from "../Vector";
 import Object3D from "../Object3D";
 
@@ -16,6 +16,7 @@ class Cube extends Object3D {
   defines = "";
   positions = Array<number>();
   colors = Array<number>();
+  program: WebGLProgram;
   constructor(params: CubeParams) {
     super();
     const { width, height, depth } = params;
@@ -60,16 +61,31 @@ class Cube extends Object3D {
     quad(6, 5, 1, 2);
     quad(4, 5, 6, 7);
     quad(5, 4, 0, 1);
+
+    this.program = this.initialCube();
+    this.initialViewMatrix();
+    this.initialProjectionMatrix();
   }
-  initialRotation(program: WebGLProgram) {
+  initialRotation() {
     const gl = getGL();
-    const rotationUniformLoc = gl!.getUniformLocation(program, "uRotation")!;
+    const rotationUniformLoc = gl.getUniformLocation(this.program, "uRotation")!;
     const [x, y, z] = this.rotation;
     if (x > 0 || y > 0 || z > 0) {
       gl.uniform3fv(rotationUniformLoc, this.rotation);
     }
   }
-
+  initialViewMatrix(){
+    const camera = getCamera();
+    const gl = getGL();
+    const viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")
+    gl.uniformMatrix4fv(viewMatrixUniformLoc, true, camera.viewMatrix);
+  }
+  initialProjectionMatrix(){
+    const camera = getCamera();
+    const gl = getGL();
+    const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")
+    gl.uniformMatrix4fv(projectionMatrixUniformLoc, true, camera.projectionMatrix);
+  }
   initialCube() {
     const gl = getGL();
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, this.definesControl())!;
@@ -83,8 +99,7 @@ class Cube extends Object3D {
   }
   render() {
     const gl = getGL();
-    const program = this.initialCube();
-    this.initialRotation(program);
+    this.initialRotation();
     gl.drawArrays(gl.TRIANGLES, 0, 36);
   }
   rotateY(angle: number) {
