@@ -62,6 +62,4 @@ void main() {
     #else
     rotation();
     #endif
-
-    // gl_Position = aPosition;
 }

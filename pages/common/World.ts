@@ -1,4 +1,4 @@
-import global from "./global";
+import global, { getGL } from "./global";
 import Object3D from "./Object3D";
 import { Vec4 } from "./Vector";
 
@@ -48,17 +48,13 @@ class World extends Object3D {
       const h = window.innerHeight * this.pixelRatio;
       this.canvas.width = w;
       this.canvas.height = h;
-      if (global.gl) {
-        global.gl.viewport(0, 0, w, h);
-        global.gl.clear(global.gl.COLOR_BUFFER_BIT | global.gl.DEPTH_BUFFER_BIT); // 同时清除两个缓冲区
-      }
+      const gl = getGL();
+      gl.viewport(0, 0, w, h);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // 同时清除两个缓冲区
     });
   }
   render() {
-    const { gl } = global;
-    if (!gl) {
-      throw new Error("webgl2 not initialized");
-    }
+    const gl = getGL();
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.children.forEach((child) => child.render());
   }

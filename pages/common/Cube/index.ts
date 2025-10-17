@@ -1,7 +1,7 @@
 import { createProgram, createProgramAttribute, createShader } from "../utils";
 import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
-import global from "../global";
+import { getGL } from "../global";
 import { Vec4 } from "../Vector";
 import Object3D from "../Object3D";
 
@@ -25,12 +25,12 @@ class Cube extends Object3D {
 
     const vertices = [
       new Vec4(-w, -h, d, 1), // 左下 前面
-      new Vec4(-w, h, d, 1),  // 左上 前面
-      new Vec4(w, h, d, 1),   // 右上 前面
-      new Vec4(w, -h, d, 1),  // 右下 前面
-      new Vec4(-w, -h, -d, 1),// 左下 后面
+      new Vec4(-w, h, d, 1), // 左上 前面
+      new Vec4(w, h, d, 1), // 右上 前面
+      new Vec4(w, -h, d, 1), // 右下 前面
+      new Vec4(-w, -h, -d, 1), // 左下 后面
       new Vec4(-w, h, -d, 1), // 左上 后面
-      new Vec4(w, h, -d, 1),  // 右上 后面
+      new Vec4(w, h, -d, 1), // 右上 后面
       new Vec4(w, -h, -d, 1), // 右下 后面
     ];
 
@@ -62,19 +62,16 @@ class Cube extends Object3D {
     quad(5, 4, 0, 1);
   }
   initialRotation(program: WebGLProgram) {
-    const { gl } = global;
+    const gl = getGL();
     const rotationUniformLoc = gl!.getUniformLocation(program, "uRotation")!;
     const [x, y, z] = this.rotation;
     if (x > 0 || y > 0 || z > 0) {
-      gl!.uniform3fv(rotationUniformLoc, this.rotation);
+      gl.uniform3fv(rotationUniformLoc, this.rotation);
     }
   }
 
   initialCube() {
-    const { gl } = global;
-    if (!gl) {
-      throw new Error("gl is null");
-    }
+    const gl = getGL();
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, this.definesControl())!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     const program = createProgram(gl, vertexShader, fragmentShader)!;
@@ -85,7 +82,7 @@ class Cube extends Object3D {
     return program;
   }
   render() {
-    const gl = global.gl!;
+    const gl = getGL();
     const program = this.initialCube();
     this.initialRotation(program);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
