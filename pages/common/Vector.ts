@@ -1,95 +1,65 @@
-class Vec {
+abstract class Vec {
   type: string;
   x: number;
   y: number;
-  constructor(x: number, y: number, type: string) {
+  z: number;
+  constructor(type: string, x?: number, y?: number, z?: number) {
     this.type = type;
-    this.x = x;
-    this.y = y;
+    this.x = x || 0;
+    this.y = y || 0;
+    this.z = z || 0;
   }
 
-  isVec3(v: Vec): v is Vec3 {
-    return v.type === "vec3";
+  length() {
+    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
-  isVec4(v: Vec): v is Vec4 {
-    return v.type === "vec4";
-  }
-
+  
   sub(v: Vec): this {
     this.x -= v.x;
     this.y -= v.y;
-    if (this.isVec3(v) && this.isVec3(this)) {
-      if (this.z !== 0) {
-        this.z -= v.z;
-      }
-    }
+    this.z -= v.z;
     return this;
   }
 
-  dot(v: Vec3): number {
-    if (this.isVec3(this)) {
-      return this.x * v.x + this.y * v.y + this.z * v.z;
-    }
-    throw "dot(): this is not Vec3";
+  dot(v: Vec): number {
+    return this.x * v.x + this.y * v.y + this.z * v.z;
   }
 
   negate(): this {
     this.x = -this.x;
     this.y = -this.y;
-    if (this.isVec3(this) || this.isVec4(this)) {
-      this.x = -this.x;
-      this.y = -this.y;
-      this.z = -this.z;
-    }
+    this.z = -this.z;
     return this;
-  }
-
-  cross(v: Vec3): Vec3 {
-    if (this.isVec3(this)) {
-      return new Vec3(
-        this.y * v.z - this.z * v.y,
-        this.z * v.x - this.x * v.z,
-        this.x * v.y - this.y * v.x
-      );
-    }
-    throw new Error("Cannot cross product a Vec2");
-  }
-
-  length() {
-    if (this.isVec3(this)) {
-      return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-    } else {
-      return Math.sqrt(this.x * this.x + this.y * this.y);
-    }
   }
 
   normalize(): this {
     const len = this.length();
     this.x /= len;
     this.y /= len;
-    if (this.isVec3(this)) {
-      this.z /= len;
-    } 
+    this.z /= len;
     return this;
   }
 }
 
-const Vec2 = Vec;
-
-class Vec3 extends Vec2 {
-  z: number;
-  constructor(x: number, y: number, z: number, type = "vec3") {
-    super(x, y, type);
-    this.z = z;
+class Vec3 extends Vec {
+  constructor(x?: number, y?: number, z?: number) {
+    super("vec3", x, y, z);
+  }
+  cross(v: Vec3) {
+    return new Vec3(
+      this.y * v.z - this.z * v.y,
+      this.z * v.x - this.x * v.z,
+      this.x * v.y - this.y * v.x
+    );
   }
 }
 
-class Vec4 extends Vec3 {
-  w: number;
-  constructor(x: number, y: number, z: number, w: number) {
-    super(x, y, z, "vec4");
-    this.w = w;
+class Vec4 extends Vec {
+  w = 1;
+  constructor(x?: number, y?: number, z?: number, w?: number) {
+    super("vec4", x, y, z);
+    this.w = w || this.w;
   }
 }
 
-export { Vec2, Vec3, Vec4 };
+export { Vec3, Vec4 };

@@ -74,16 +74,16 @@ class Cube extends Object3D {
       gl.uniform3fv(rotationUniformLoc, this.rotation);
     }
   }
-  initialViewMatrix(){
+  initialViewMatrix() {
     const camera = getCamera();
     const gl = getGL();
-    const viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")
+    const viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix");
     gl.uniformMatrix4fv(viewMatrixUniformLoc, true, camera.viewMatrix);
   }
-  initialProjectionMatrix(){
+  initialProjectionMatrix() {
     const camera = getCamera();
     const gl = getGL();
-    const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")
+    const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix");
     gl.uniformMatrix4fv(projectionMatrixUniformLoc, true, camera.projectionMatrix);
   }
   initialCube() {

@@ -13,11 +13,11 @@ const near = 1;
 const far = 10;
 
 const camera = new OrthographicCamera(left, right, bottom, top, near, far);
-camera.position.x = 0;
+camera.position.x = 4;
 camera.position.y = 0;
 camera.position.z = 2;
 
-camera.lookAt(new Vec3(0, 0, -1));
+camera.lookAt(new Vec3(0, 0, 0));
 
 
 const cube = new Cube({
