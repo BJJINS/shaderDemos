@@ -13,7 +13,6 @@ abstract class Matrix {
   }
 }
 
-
 // 行主序矩阵
 export class Mat4 extends Matrix {
   constructor(array?: number[]) {
@@ -58,45 +57,6 @@ export class Mat4 extends Matrix {
       m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] + m1[15] * m2[13],
       m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14],
       m1[12] * m2[3] + m1[13] * m2[7] + m1[14] * m2[11] + m1[15] * m2[15],
-    ];
-    return this;
-  }
-}
-
-export class Mat3 extends Matrix {
-  constructor(array?: number[]) {
-    const identityMatrix = [
-      1, 0, 0,
-      0, 1, 0,
-      0, 0, 1
-    ];
-    super(array || identityMatrix, "mat3");
-  }
-  transpose() {
-    const m = this.matrix;
-    this.matrix = [
-      m[0], m[3], m[6],
-      m[1], m[4], m[7],
-      m[2], m[5], m[8],
-    ];
-    return this;
-  }
-  mult(m: Mat3): this {
-    const m1 = this.matrix;
-    const m2 = m.matrix;
-
-    this.matrix = [
-      m1[0] * m2[0] + m1[1] * m2[3] + m1[2] * m2[6],
-      m1[0] * m2[1] + m1[1] * m2[4] + m1[2] * m2[7],
-      m1[0] * m2[2] + m1[1] * m2[5] + m1[2] * m2[8],
-
-      m1[3] * m2[0] + m1[4] * m2[3] + m1[5] * m2[6],
-      m1[3] * m2[1] + m1[4] * m2[4] + m1[5] * m2[7],
-      m1[3] * m2[2] + m1[4] * m2[5] + m1[5] * m2[8],
-
-      m1[6] * m2[0] + m1[7] * m2[3] + m1[8] * m2[6],
-      m1[6] * m2[1] + m1[7] * m2[4] + m1[8] * m2[7],
-      m1[6] * m2[2] + m1[7] * m2[5] + m1[8] * m2[8],
     ];
     return this;
   }

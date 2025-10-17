@@ -13,7 +13,7 @@ const near = 1;
 const far = 10;
 
 const camera = new OrthographicCamera(left, right, bottom, top, near, far);
-camera.position.x = 4;
+camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 2;
 
@@ -21,15 +21,19 @@ camera.lookAt(new Vec3(0, 0, 0));
 
 
 const cube = new Cube({
-  width: 0.5,
-  height: 0.5,
-  depth: 0.5,
+  width: 1,
+  height: 1,
+  depth: 1,
 });
 
 
 world.add(cube);
 
+let angle = 0;
+
 const render = () => {
+  angle+=1;
+  cube.rotateX(angle)
   world.render();
   requestAnimationFrame(render);
 };

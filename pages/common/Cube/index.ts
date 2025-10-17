@@ -12,8 +12,6 @@ interface CubeParams {
 }
 
 class Cube extends Object3D {
-  quaternion = true;
-  defines = "";
   positions = Array<number>();
   colors = Array<number>();
   program: WebGLProgram;
@@ -63,24 +61,16 @@ class Cube extends Object3D {
     quad(5, 4, 0, 1);
 
     this.program = this.initialCube();
-    this.initialViewMatrix();
-    this.initialProjectionMatrix();
+    this.viewMatrix();
+    this.projectionMatrix();
   }
-  initialRotation() {
-    const gl = getGL();
-    const rotationUniformLoc = gl.getUniformLocation(this.program, "uRotation")!;
-    const [x, y, z] = this.rotation;
-    if (x > 0 || y > 0 || z > 0) {
-      gl.uniform3fv(rotationUniformLoc, this.rotation);
-    }
-  }
-  initialViewMatrix() {
+  viewMatrix() {
     const camera = getCamera();
     const gl = getGL();
     const viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix");
     gl.uniformMatrix4fv(viewMatrixUniformLoc, true, camera.viewMatrix);
   }
-  initialProjectionMatrix() {
+  projectionMatrix() {
     const camera = getCamera();
     const gl = getGL();
     const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix");
@@ -88,7 +78,7 @@ class Cube extends Object3D {
   }
   initialCube() {
     const gl = getGL();
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, this.definesControl())!;
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     const program = createProgram(gl, vertexShader, fragmentShader)!;
     const vertices = new Float32Array(this.positions);
@@ -97,25 +87,16 @@ class Cube extends Object3D {
     createProgramAttribute(gl, program, 4, vertexColors, "aColor", gl.FLOAT);
     return program;
   }
+  modelMatrix(){
+    const rotationMatrix = this.initialRotation();
+    const gl = getGL();
+    const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix");
+    gl.uniformMatrix4fv(projectionMatrixUniformLoc, true, rotationMatrix.matrix);
+  }
   render() {
     const gl = getGL();
-    this.initialRotation();
+    this.modelMatrix();
     gl.drawArrays(gl.TRIANGLES, 0, 36);
-  }
-  rotateY(angle: number) {
-    this.rotation[1] = angle;
-  }
-  rotateX(angle: number) {
-    this.rotation[0] = angle;
-  }
-  rotateZ(angle: number) {
-    this.rotation[2] = angle;
-  }
-  definesControl() {
-    if (this.quaternion) {
-      this.defines += "#define ENABLE_QUATERNION\n";
-    }
-    return vertexShaderSource.replace("{{DEFINES}}", this.defines);
   }
 }
 
