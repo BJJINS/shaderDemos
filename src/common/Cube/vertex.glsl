@@ -9,28 +9,6 @@ uniform mat4 uModelMatrix;
 
 out vec3 vColor;
 
-// void rotation() {
-//     vec3 angles = radians(uRotation);
-//     vec3 c = cos(angles);
-//     vec3 s = sin(angles);
-//     mat4 rx = mat4(1.0, 0.0, 0.0, 0.0,
-//             0.0, c.x, s.x, 0.0,
-//             0.0, -s.x, c.x, 0.0,
-//             0.0, 0.0, 0.0, 1.0);
-
-//     mat4 ry = mat4(c.y, 0.0, -s.y, 0.0,
-//             0.0, 1.0, 0.0, 0.0,
-//             s.y, 0.0, c.y, 0.0,
-//             0.0, 0.0, 0.0, 1.0);
-
-//     mat4 rz = mat4(c.z, s.z, 0.0, 0.0,
-//             -s.z, c.z, 0.0, 0.0,
-//             0.0, 0.0, 1.0, 0.0,
-//             0.0, 0.0, 0.0, 1.0);
-
-//     gl_Position = rz * ry * rx * aPosition;
-// }
-
 // quaternion multiplier
 vec4 mult_q(vec4 a, vec4 b) {
     return (vec4(a.x * b.x - dot(a.yzw, b.yzw), a.x * b.yzw + b.x * a.yzw + cross(b.yzw, a.yzw)));
@@ -57,11 +35,5 @@ vec4 inv_q(vec4 a) {
 
 void main() {
     vColor = aColor;
-    // #ifdef ENABLE_QUATERNION
-    // rotation_quaternion();
-    // #else
-    // rotation();
-    // #endif
-
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;
 }

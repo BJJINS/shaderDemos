@@ -4,7 +4,7 @@ import { Vec3 } from "../Vector";
 import Camera from "./Camera";
 
 class OrthographicCamera extends Camera {
-  position = new Vec3(0, 0, 0);
+  position = new Vec3();
   projectionMatrix: Float32Array;
   viewMatrix = new Mat4().glUniformArray();
   constructor(left:number, right:number, bottom:number, top:number, near:number, far:number) {

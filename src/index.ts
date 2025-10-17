@@ -1,7 +1,7 @@
-import OrthographicCamera from "../common/Camera/Orthographic";
-import Cube from "../common/Cube";
-import { Vec3 } from "../common/Vector";
-import World from "../common/World";
+import OrthographicCamera from "./common/Camera/Orthographic";
+import Cube from "./common/Cube";
+import { Vec3 } from "./common/Vector";
+import World from "./common/World";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
@@ -19,21 +19,19 @@ camera.position.z = 2;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
-
 const cube = new Cube({
   width: 1,
   height: 1,
   depth: 1,
 });
 
-
 world.add(cube);
 
 let angle = 0;
 
 const render = () => {
-  angle+=1;
-  cube.rotateX(angle)
+  angle += 1;
+  cube.rotation.y = angle;
   world.render();
   requestAnimationFrame(render);
 };
