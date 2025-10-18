@@ -34,6 +34,9 @@ abstract class Vec {
 
   normalize(): this {
     const len = this.length();
+    if (!len) {
+      return this;
+    }
     this.x /= len;
     this.y /= len;
     this.z /= len;
