@@ -15,7 +15,7 @@ const far = 10;
 const camera = new OrthographicCamera(left, right, bottom, top, near, far);
 camera.position.x = 0;
 camera.position.y = 0;
-camera.position.z = 2;
+camera.position.z = 4;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
@@ -25,13 +25,14 @@ const cube = new Cube({
   depth: 1,
 });
 
+// cube.rotation.y = -90;
+
+cube.quaternion.setAxisDegrees(new Vec3(0,1,0), 45)
+
 world.add(cube);
 
-let angle = 0;
 
 const render = () => {
-  angle += 1;
-  cube.rotation.y = angle;
   world.render();
   requestAnimationFrame(render);
 };

@@ -1,14 +1,13 @@
+import { Mat4 } from "./Matrix";
+import { degreesToRadians } from "./utils";
+import { type Vec3 } from "./Vector";
+
 class Quaternion {
-  x: number;
-  y: number;
-  z: number;
-  w: number;
-  constructor(x = 0, y = 0, z = 0, w = 1) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.w = w;
-  }
+  x = 0;
+  y = 0;
+  z = 0;
+  w = 1; // w是1表示旋转角度是0度
+  constructor() {}
   set(x: number, y: number, z: number, w: number) {
     this.x = x;
     this.y = y;
@@ -18,12 +17,35 @@ class Quaternion {
   }
   copy(quaternion: Quaternion) {
     const { x, y, z, w } = quaternion;
-    this.set(x, y, z, w);
-    return this;
+    return this.set(x, y, z, w);
   }
-  length(){
+  length() {
     const { x, y, z, w } = this;
     return Math.sqrt(x * x + y * y + z * z + w * w);
+  }
+  normalize() {
+    const len = this.length();
+    if (!len) {
+      return this;
+    }
+    const { x, y, z, w } = this;
+    return this.set(x / len, y / len, z / len, w / len);
+  }
+  setAxisDegrees(axis: Vec3, degrees: number) {
+    const halfRadians = degreesToRadians(degrees / 2);
+    const c = Math.cos(halfRadians);
+    const s = Math.sin(halfRadians);
+    return this.set(s * axis.x, s * axis.y, s * axis.z, c).normalize();
+  }
+  // 逆时针旋转
+  toMatrix() {
+    const { x, y, z, w } = this;
+    return new Mat4([
+      1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * z * w, 2 * x * z + 2 * y * w, 0,
+      2 * x * y + 2 * z * w, 1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * x * w, 0,
+      2 * x * z - 2 * y * w, 2 * y * z + 2 * x * w, 1 - 2 * x * x - 2 * y * y, 0,
+      0, 0, 0, 1
+    ]);
   }
 }
 

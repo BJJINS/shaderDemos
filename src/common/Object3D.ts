@@ -1,3 +1,4 @@
+import Quaternion from "./Quaternion";
 import Transformation from "./transformation";
 import { Vec3 } from "./Vector";
 
@@ -6,6 +7,7 @@ abstract class Object3D {
   rotation = new Vec3();
   scale = new Vec3(1, 1, 1);
   children: Object3D[] = [];
+  quaternion = new Quaternion();
   constructor() {}
   add(child: Object3D) {
     this.children.push(child);
@@ -24,11 +26,15 @@ abstract class Object3D {
     const { x, y, z } = this.scale;
     return Transformation.scale(x, y, z);
   }
+  handleQuaternion() {
+    return this.quaternion.toMatrix();
+  }
   modelMatrix() {
     const rotationMatrix = this.handleRotation();
+    const rotationQuaternionMatrix = this.handleQuaternion();
     const translateMatrix = this.handlePosition();
     const scaleMatrix = this.handleScale();
-    return translateMatrix.mult(scaleMatrix.mult(rotationMatrix));
+    return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)));
   }
   abstract render(): void;
 }

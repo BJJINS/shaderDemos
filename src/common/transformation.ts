@@ -1,4 +1,5 @@
 import { Mat4 } from "./Matrix";
+import { degreesToRadians } from "./utils";
 
 const scale = (x = 1, y = 1, z = 1) => {
   return new Mat4([
@@ -19,7 +20,7 @@ const scale = (x = 1, y = 1, z = 1) => {
 }
 
 const rotationX = (degrees: number) => {
-   const radians = degrees / 180 * Math.PI;
+   const radians = degreesToRadians(degrees);
    const c = Math.cos(radians);
    const s = Math.sin(radians);
     return new Mat4([
@@ -32,7 +33,7 @@ const rotationX = (degrees: number) => {
 
 
 const rotationY = (degrees: number) => {
-   const radians = degrees / 180 * Math.PI;
+   const radians = degreesToRadians(degrees);
    const c = Math.cos(radians);
    const s = Math.sin(radians);
     return new Mat4([
@@ -44,7 +45,7 @@ const rotationY = (degrees: number) => {
 }
 
 const rotationZ = (degrees: number) => {
-   const radians = degrees / 180 * Math.PI;
+   const radians = degreesToRadians(degrees);
    const c = Math.cos(radians);
    const s = Math.sin(radians);
     return new Mat4([

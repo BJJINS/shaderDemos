@@ -44,3 +44,7 @@ export const createProgramAttribute = (
   gl.enableVertexAttribArray(attributeLocation);
   gl.vertexAttribPointer(attributeLocation, size, type, false, 0, 0);
 };
+
+export const degreesToRadians = (degrees: number) => {
+  return degrees / 180 * Math.PI;
+};
