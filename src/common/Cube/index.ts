@@ -14,7 +14,6 @@ interface CubeParams {
 class Cube extends Object3D {
   positions = Array<number>();
   colors = Array<number>();
-  program: WebGLProgram;
   constructor(params: CubeParams) {
     super();
     const { width, height, depth } = params;
@@ -59,23 +58,21 @@ class Cube extends Object3D {
     quad(6, 5, 1, 2);
     quad(4, 5, 6, 7);
     quad(5, 4, 0, 1);
-
-    this.program = this.initial();
+    const gl = getGL();
+    this.program = this.initial(gl);
+    this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
+    this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
+    this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
   }
-  viewMatrix() {
+  viewMatrix(gl: WebGL2RenderingContext) {
     const camera = getCamera();
-    const gl = getGL();
-    const viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix");
-    gl.uniformMatrix4fv(viewMatrixUniformLoc, true, camera.viewMatrix);
+    gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
   }
-  projectionMatrix() {
+  projectionMatrix(gl: WebGL2RenderingContext) {
     const camera = getCamera();
-    const gl = getGL();
-    const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix");
-    gl.uniformMatrix4fv(projectionMatrixUniformLoc, true, camera.projectionMatrix);
+    gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
   }
-  initial() {
-    const gl = getGL();
+  initial(gl: WebGL2RenderingContext) {
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     const program = createProgram(gl, vertexShader, fragmentShader)!;
@@ -85,21 +82,19 @@ class Cube extends Object3D {
     createProgramAttribute(gl, program, 4, vertexColors, "aColor", gl.FLOAT);
     return program;
   }
-  uniformModelMatrix() {
+  uniformModelMatrix(gl: WebGL2RenderingContext) {
     const matrix = this.modelMatrix();
-    const gl = getGL();
-    const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix");
-    gl.uniformMatrix4fv(projectionMatrixUniformLoc, true, matrix.matrix);
+    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, matrix.matrix);
   }
-  uniform() {
-    this.viewMatrix();
-    this.projectionMatrix();
-    this.uniformModelMatrix();
+  uniform(gl: WebGL2RenderingContext) {
+    this.viewMatrix(gl);
+    this.projectionMatrix(gl);
+    this.uniformModelMatrix(gl);
   }
   render() {
     const gl = getGL();
     gl.useProgram(this.program);
-    this.uniform();
+    this.uniform(gl);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
   }
 }

@@ -8,6 +8,10 @@ abstract class Object3D {
   scale = new Vec3(1, 1, 1);
   children: Object3D[] = [];
   quaternion = new Quaternion();
+  program!: WebGLProgram;
+  viewMatrixUniformLoc!: WebGLUniformLocation;
+  projectionMatrixUniformLoc!: WebGLUniformLocation;
+  modelMatrixUniformLoc!: WebGLUniformLocation;
   constructor() {}
   add(child: Object3D) {
     this.children.push(child);
