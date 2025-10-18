@@ -31,13 +31,13 @@ class Quaternion {
     const { x, y, z, w } = this;
     return this.set(x / len, y / len, z / len, w / len);
   }
+  // 绕axis向量逆时针旋转degrees度
   setAxisDegrees(axis: Vec3, degrees: number) {
     const halfRadians = degreesToRadians(degrees / 2);
     const c = Math.cos(halfRadians);
     const s = Math.sin(halfRadians);
     return this.set(s * axis.x, s * axis.y, s * axis.z, c).normalize();
   }
-  // 逆时针旋转
   toMatrix() {
     const { x, y, z, w } = this;
     return new Mat4([

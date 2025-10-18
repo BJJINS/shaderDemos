@@ -21,7 +21,6 @@ export const createProgram = (
   gl.linkProgram(program); // 连结 shader
   const ok = gl.getProgramParameter(program, gl.LINK_STATUS); // 检查是否成功连结 shader
   if (ok) {
-    gl.useProgram(program);
     return program;
   }
   console.error(gl.getProgramInfoLog(program));

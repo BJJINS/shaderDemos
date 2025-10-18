@@ -61,8 +61,6 @@ class Cube extends Object3D {
     quad(5, 4, 0, 1);
 
     this.program = this.initial();
-    this.viewMatrix();
-    this.projectionMatrix();
   }
   viewMatrix() {
     const camera = getCamera();
@@ -87,15 +85,21 @@ class Cube extends Object3D {
     createProgramAttribute(gl, program, 4, vertexColors, "aColor", gl.FLOAT);
     return program;
   }
-  uniformModelMatrix(){
+  uniformModelMatrix() {
     const matrix = this.modelMatrix();
     const gl = getGL();
     const projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix");
     gl.uniformMatrix4fv(projectionMatrixUniformLoc, true, matrix.matrix);
   }
+  uniform() {
+    this.viewMatrix();
+    this.projectionMatrix();
+    this.uniformModelMatrix();
+  }
   render() {
     const gl = getGL();
-    this.uniformModelMatrix();
+    gl.useProgram(this.program);
+    this.uniform();
     gl.drawArrays(gl.TRIANGLES, 0, 36);
   }
 }

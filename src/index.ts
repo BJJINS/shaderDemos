@@ -25,14 +25,25 @@ const cube = new Cube({
   depth: 1,
 });
 
-// cube.rotation.y = -90;
+cube.rotation.y = 45;
 
-cube.quaternion.setAxisDegrees(new Vec3(0,1,0), 45)
+const cube1 = new Cube({
+  width: 1,
+  height: 1,
+  depth: 1,
+});
+
+cube1.position.x = -3;
 
 world.add(cube);
+world.add(cube1)
 
+let angle = 0;
 
 const render = () => {
+  angle += 1;
+  cube.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
+  cube1.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
   world.render();
   requestAnimationFrame(render);
 };
