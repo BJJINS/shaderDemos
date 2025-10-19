@@ -34,6 +34,7 @@ export class Mat4 extends Matrix {
     ];
     return this;
   }
+  // this * m
   mult(m: Mat4): this {
     const m1 = this.matrix;
     const m2 = m.matrix;
