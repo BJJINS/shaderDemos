@@ -1,5 +1,5 @@
 import Quaternion from "@core/math/Quaternion";
-import Transformation from "@core/math/transformation";
+import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
 
 abstract class Object3D {
