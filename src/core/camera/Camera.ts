@@ -3,7 +3,7 @@ import { Vec3 } from "@core/math/Vector";
 
 type CameraType = "orthographic" | "perspective";
 
-class Camera {
+abstract class Camera {
   position = new Vec3();
   // 相机类型：正交或透视
   type: CameraType;
@@ -32,6 +32,7 @@ class Camera {
     ]);
     this.viewMatrix = viewMatrix.glUniformArray();
   }
+  abstract updateProjectionMatrix(): void;
 }
 
 export default Camera;

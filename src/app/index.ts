@@ -2,6 +2,7 @@ import OrthographicCamera from "@core/camera/Orthographic";
 import Cube from "@objects/Cube";
 import { Vec3 } from "@core/math/Vector";
 import World from "@core/gl/World";
+import PerspectiveCamera from "@core/camera/Perspective";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
@@ -10,12 +11,13 @@ const bottom = -top;
 const left = -top * aspect;
 const right = -left;
 const near = 1;
-const far = 10;
+const far = 100;
 
-const camera = new OrthographicCamera(left, right, bottom, top, near, far);
+// const camera = new OrthographicCamera(left, right, bottom, top, near, far);
+const camera = new PerspectiveCamera(45, aspect, near, far);
 camera.position.x = 0;
 camera.position.y = 0;
-camera.position.z = 4;
+camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
