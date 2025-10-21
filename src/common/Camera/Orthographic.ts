@@ -7,6 +7,8 @@ class OrthographicCamera extends Camera {
   constructor(left:number, right:number, bottom:number, top:number, near:number, far:number) {
     super("orthographic");
 
+    near = -near;
+    far = -far;
     const w = right - left;
     const h = top - bottom;
     const d = far - near;
@@ -15,7 +17,7 @@ class OrthographicCamera extends Camera {
     const scaleMat4 = new Mat4([
       2/w, 0,   0,   0,
       0,   2/h, 0,   0,
-      0,   0,  -2/d, 0,
+      0,   0,  2/d, 0,
       0,   0,   0,   1
     ]);
 
@@ -23,7 +25,7 @@ class OrthographicCamera extends Camera {
     const translateMat4 = new Mat4([
       1, 0, 0, -(left + right) / 2,
       0, 1, 0, -(top + bottom) / 2,
-      0, 0, 1,  (far + near)   / 2,
+      0, 0, 1,  -(far + near)   / 2,
       0, 0, 0, 1
     ]);
 
