@@ -1,5 +1,6 @@
 import Camera from "@core/camera/Camera";
 import global from "@core/gl/global";
+import { degreesToRadians } from "@core/gl/utils";
 import { Mat4 } from "@core/math/Matrix";
 
 class PerspectiveCamera extends Camera {
@@ -17,14 +18,12 @@ class PerspectiveCamera extends Camera {
   }
   updateProjectionMatrix() {
     const { fov, aspect, near, far } = this;
-    const t = Math.tan(fov / 2) * near;
-    const r = t * aspect;
-    const l = -r;
-    const b = -t;
+    const f = 1.0 / Math.tan( degreesToRadians(fov) / 2 );
+    const d = far - near;
     this.projectionMatrix = new Mat4([
-      2 * near / (r - l), 0, (r + l) / (r - l), 0,
-      0, 2 * near / (t - b), (t + b) / (t - b), 0,
-      0, 0, -(far + near) / (near - far), -2 * far * near / (near - far),
+      f / aspect, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, -(far + near) / d, -2 * far * near / d,
       0, 0, -1, 0
     ]).glUniformArray();
     global.camera = this;
