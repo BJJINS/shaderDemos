@@ -1,5 +1,5 @@
-import { Mat4 } from "./Matrix";
-import { degreesToRadians } from "./utils";
+import { Mat4 } from "@core/math/Matrix";
+import { degreesToRadians } from "@core/gl/utils";
 
 const scale = (x = 1, y = 1, z = 1) => {
   return new Mat4([
@@ -10,7 +10,7 @@ const scale = (x = 1, y = 1, z = 1) => {
   ]);
 };
 
- const translate = (x = 0, y = 0, z = 0) => {
+const translate = (x = 0, y = 0, z = 0) => {
   return new Mat4([
     1, 0, 0, x, 
     0, 1, 0, y, 
@@ -30,7 +30,6 @@ const rotationX = (degrees: number) => {
         0, 0, 0, 1
     ]); 
 }
-
 
 const rotationY = (degrees: number) => {
    const radians = degreesToRadians(degrees);
@@ -55,8 +54,6 @@ const rotationZ = (degrees: number) => {
         0,  0, 0, 1
     ]); 
 }
-
-
 
 const Transformation = {
   scale,

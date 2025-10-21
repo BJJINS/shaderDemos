@@ -1,6 +1,6 @@
-import { Mat4 } from "./Matrix";
-import { degreesToRadians } from "./utils";
-import { type Vec3 } from "./Vector";
+import { Mat4 } from "@core/math/Matrix";
+import { degreesToRadians } from "@core/gl/utils";
+import { type Vec3 } from "@core/math/Vector";
 
 class Quaternion {
   x = 0;

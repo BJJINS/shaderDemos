@@ -12,6 +12,11 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@core/*": ["src/core/*"],
+      "@objects/*": ["src/objects/*"]
+    },
 
     /* Linting */
     "strict": true,

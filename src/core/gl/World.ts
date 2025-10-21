@@ -1,6 +1,6 @@
-import global, { getGL } from "./global";
-import Object3D from "./Object3D";
-import { Vec4 } from "./Vector";
+import global, { getGL } from "@core/gl/global";
+import Object3D from "@core/scene/Object3D";
+import { Vec4 } from "@core/math/Vector";
 
 interface WorldParams {
   clearColor?: Vec4;
@@ -56,7 +56,7 @@ class World extends Object3D {
   render() {
     const gl = getGL();
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.children.forEach((child) => child.render());
+    this.children.forEach((child: Object3D) => child.render());
   }
 }
 

@@ -1,12 +1,15 @@
-import { Mat4 } from "../Matrix";
-import { Vec3 } from "../Vector";
+import { Mat4 } from "@core/math/Matrix";
+import { Vec3 } from "@core/math/Vector";
 
 type CameraType = "orthographic" | "perspective";
 
 class Camera {
   position = new Vec3();
-  type: String;
+  // 相机类型：正交或透视
+  type: CameraType;
   viewMatrix = new Mat4().glUniformArray();
+  // 投影矩阵：由具体相机实现覆盖
+  projectionMatrix = new Mat4().glUniformArray();
   constructor(type: CameraType) {
     this.type = type;
   }

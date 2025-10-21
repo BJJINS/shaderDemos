@@ -1,4 +1,4 @@
-import Camera from "./Camera";
+import Camera from "@core/camera/Camera";
 
 class PerspectiveCamera extends Camera {
   constructor() {

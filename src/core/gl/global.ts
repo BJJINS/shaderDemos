@@ -1,8 +1,8 @@
-import type OrthographicCamera from "./Camera/Orthographic";
+import type Camera from "@core/camera/Camera";
 
 interface Global {
   gl?: WebGL2RenderingContext;
-  camera?: OrthographicCamera;
+  camera?: Camera;
 }
 
 const global: Global = {};

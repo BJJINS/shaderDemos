@@ -1,7 +1,7 @@
-import OrthographicCamera from "./common/Camera/Orthographic";
-import Cube from "./common/Cube";
-import { Vec3 } from "./common/Vector";
-import World from "./common/World";
+import OrthographicCamera from "@core/camera/Orthographic";
+import Cube from "@objects/Cube";
+import { Vec3 } from "@core/math/Vector";
+import World from "@core/gl/World";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
@@ -27,23 +27,24 @@ const cube = new Cube({
 
 cube.rotation.y = 45;
 
-const cube1 = new Cube({
+const cube2 = new Cube({
   width: 1,
   height: 1,
   depth: 1,
 });
 
-cube1.position.x = -3;
+// 第二个立方体：向左平移，便于区分
+cube2.position.x = -3;
 
 world.add(cube);
-world.add(cube1)
+world.add(cube2);
 
 let angle = 0;
 
 const render = () => {
   angle += 1;
   cube.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
-  cube1.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
+  cube2.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
   world.render();
   requestAnimationFrame(render);
 };

@@ -1,6 +1,6 @@
-import Quaternion from "./Quaternion";
-import Transformation from "./transformation";
-import { Vec3 } from "./Vector";
+import Quaternion from "@core/math/Quaternion";
+import Transformation from "@core/math/transformation";
+import { Vec3 } from "@core/math/Vector";
 
 abstract class Object3D {
   position = new Vec3();

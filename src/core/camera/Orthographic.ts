@@ -1,6 +1,6 @@
-import global from "../global";
-import { Mat4 } from "../Matrix";
-import Camera from "./Camera";
+import global from "@core/gl/global";
+import { Mat4 } from "@core/math/Matrix";
+import Camera from "@core/camera/Camera";
 
 class OrthographicCamera extends Camera {
   projectionMatrix: Float32Array;
