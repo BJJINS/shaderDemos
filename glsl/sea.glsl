@@ -11,9 +11,16 @@ uniform vec2 u_mouse;
 
 // Math
 
-
-
-
+mat3 fromEuler(vec3 angle) {
+    vec2 a1 = vec2(sin(angle.x), cos(angle.x));
+    vec2 a2 = vec2(sin(angle.y), cos(angle.y));
+    vec2 a3 = vec2(sin(angle.z), cos(angle.z));
+    return mat3(
+        a1.y * a3.y + a1.x * a2.x * a3.x, a1.y * a2.x * a3.x + a3.y * a1.x, -a2.y * a3.x,
+        -a2.y * a1.x, a1.y * a2.y, a2.x,
+        a3.y * a1.x * a2.x + a1.y * a3.x, a1.x * a3.x - a1.y * a3.y * a2.x, a2.y * a3.y
+    );
+}
 
 vec3 getPixel(in vec2 coord, float time) {
     vec2 uv = coord / u_resolution;
@@ -27,7 +34,7 @@ vec3 getPixel(in vec2 coord, float time) {
     // 屏幕边缘的光线更倾斜，增强透视感
     // todo 数学原理？
     direction.z += length(uv) * 0.14;
-    direction = normalize(direction);
+    direction = normalize(direction) * fromEuler(angle);
 
     return vec3(0.0);
 }
