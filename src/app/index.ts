@@ -32,7 +32,7 @@ cube.rotation.y = 45;
 const cube2 = new Cube({
   width: 1,
   height: 1,
-  depth: 1,
+  depth: 3,
 });
 
 // 第二个立方体：向左平移，便于区分

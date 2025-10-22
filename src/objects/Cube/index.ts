@@ -12,8 +12,9 @@ interface CubeParams {
 }
 
 class Cube extends Object3D {
-  positions = Array<number>();
-  colors = Array<number>();
+  positions!: Float32Array;
+  colors!: Float32Array;
+  vao!: WebGLVertexArrayObject;
   constructor(params: CubeParams) {
     super();
     const { width, height, depth } = params;
@@ -43,13 +44,15 @@ class Cube extends Object3D {
       new Vec3(1.0, 1.0, 1.0), // white
     ];
 
+    const position: number[] = [];
+    const colors: number[] = [];
     const quad = (a: number, b: number, c: number, d: number) => {
       const indices = [a, b, c, a, c, d];
       for (let i = 0; i < indices.length; ++i) {
         const v = vertices[indices[i]];
         const vColor = vertexColors[a];
-        this.positions.push(v.x, v.y, v.z, v.w);
-        this.colors.push(vColor.x, vColor.y, vColor.z);
+        position.push(v.x, v.y, v.z, v.w);
+        colors.push(vColor.x, vColor.y, vColor.z);
       }
     };
     quad(1, 0, 3, 2);
@@ -58,6 +61,9 @@ class Cube extends Object3D {
     quad(6, 5, 1, 2);
     quad(4, 5, 6, 7);
     quad(5, 4, 0, 1);
+    this.positions = new Float32Array(position);
+    this.colors = new Float32Array(colors);
+
     const gl = getGL();
     this.program = this.initial(gl);
     this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
@@ -68,10 +74,12 @@ class Cube extends Object3D {
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     const program = createProgram(gl, vertexShader, fragmentShader)!;
-    const vertices = new Float32Array(this.positions);
-    const vertexColors = new Float32Array(this.colors);
-    createProgramAttribute(gl, program, 4, vertices, "aPosition", gl.FLOAT);
-    createProgramAttribute(gl, program, 3, vertexColors, "aColor", gl.FLOAT);
+    const vao = gl.createVertexArray()!;
+    gl.bindVertexArray(vao);
+    createProgramAttribute(gl, program, 4, this.positions, "aPosition", gl.FLOAT);
+    createProgramAttribute(gl, program, 3, this.colors, "aColor", gl.FLOAT);
+    gl.bindVertexArray(null);
+    this.vao = vao;
     return program;
   }
   uniform(gl: WebGL2RenderingContext) {
@@ -84,7 +92,9 @@ class Cube extends Object3D {
     const gl = getGL();
     gl.useProgram(this.program);
     this.uniform(gl);
+    gl.bindVertexArray(this.vao);
     gl.drawArrays(gl.TRIANGLES, 0, 36);
+    gl.bindVertexArray(null);
   }
 }
 
