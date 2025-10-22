@@ -12,9 +12,6 @@ interface CubeParams {
 }
 
 class Cube extends Object3D {
-  positions!: Float32Array;
-  colors!: Float32Array;
-  vao!: WebGLVertexArrayObject;
   constructor(params: CubeParams) {
     super();
     const { width, height, depth } = params;
@@ -61,7 +58,7 @@ class Cube extends Object3D {
     quad(6, 5, 1, 2);
     quad(4, 5, 6, 7);
     quad(5, 4, 0, 1);
-    this.positions = new Float32Array(position);
+    this.vertices = new Float32Array(position);
     this.colors = new Float32Array(colors);
 
     const gl = getGL();
@@ -76,7 +73,7 @@ class Cube extends Object3D {
     const program = createProgram(gl, vertexShader, fragmentShader)!;
     const vao = gl.createVertexArray()!;
     gl.bindVertexArray(vao);
-    createProgramAttribute(gl, program, 4, this.positions, "aPosition", gl.FLOAT);
+    createProgramAttribute(gl, program, 4, this.vertices, "aPosition", gl.FLOAT);
     createProgramAttribute(gl, program, 3, this.colors, "aColor", gl.FLOAT);
     gl.bindVertexArray(null);
     this.vao = vao;
