@@ -48,10 +48,13 @@ world.add(sphere);
 
 let angle = 0;
 
+const zAxis = new Vec3(1, 0, 1);
+
 const render = () => {
   angle += 1;
-  cube.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
-  cube2.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
+  cube.quaternion.setAxisDegrees(zAxis, angle);
+  cube2.quaternion.setAxisDegrees(zAxis, angle);
+  sphere.quaternion.setAxisDegrees(zAxis, angle);
   world.render();
   requestAnimationFrame(render);
 };
