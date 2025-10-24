@@ -1,20 +1,13 @@
-import OrthographicCamera from "@core/camera/Orthographic";
 import Cube from "@objects/Cube";
 import { Vec3 } from "@core/math/Vector";
 import World from "@core/gl/World";
 import PerspectiveCamera from "@core/camera/Perspective";
-import Sphere from "@objects/Sphere";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
-const top = 5;
-const bottom = -top;
-const left = -top * aspect;
-const right = -left;
 const near = 1;
 const far = 100;
 
-// const camera = new OrthographicCamera(left, right, bottom, top, near, far);
 const camera = new PerspectiveCamera(45, aspect, near, far);
 camera.position.x = 0;
 camera.position.y = 0;
@@ -42,10 +35,6 @@ cube2.position.x = -3;
 world.add(cube);
 world.add(cube2);
 
-const sphere = new Sphere({ radius: 1 });
-sphere.position.x = 3;
-world.add(sphere);
-
 let angle = 0;
 
 const zAxis = new Vec3(1, 0, 1);
@@ -54,7 +43,6 @@ const render = () => {
   angle += 1;
   cube.quaternion.setAxisDegrees(zAxis, angle);
   cube2.quaternion.setAxisDegrees(zAxis, angle);
-  sphere.quaternion.setAxisDegrees(zAxis, angle);
   world.render();
   requestAnimationFrame(render);
 };
