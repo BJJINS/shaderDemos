@@ -14,9 +14,14 @@ abstract class Object3D {
   modelMatrixUniformLoc!: WebGLUniformLocation;
 
   vertices!: Float32Array;
+  indices?: Uint16Array;
   colors!: Float32Array;
   vao!: WebGLVertexArrayObject;
-  constructor() {}
+
+  type: string;
+  constructor(type: string) {
+    this.type = type;
+  }
   add(child: Object3D) {
     this.children.push(child);
   }

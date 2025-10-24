@@ -13,7 +13,7 @@ interface CubeParams {
 
 class Cube extends Object3D {
   constructor(params: CubeParams) {
-    super();
+    super("cube");
     const { width, height, depth } = params;
     const w = width / 2;
     const h = height / 2;

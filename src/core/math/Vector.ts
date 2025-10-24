@@ -11,9 +11,9 @@ abstract class Vec {
   }
 
   length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    return Math.hypot(this.x, this.y, this.z);
   }
-  
+
   sub(v: Vec): this {
     this.x -= v.x;
     this.y -= v.y;
@@ -55,6 +55,9 @@ class Vec3 extends Vec {
       this.x * v.y - this.y * v.x
     );
   }
+  clone() {
+    return new Vec3(this.x, this.y, this.z);
+  }
 }
 
 class Vec4 extends Vec {
@@ -62,6 +65,9 @@ class Vec4 extends Vec {
   constructor(x?: number, y?: number, z?: number, w?: number) {
     super("vec4", x, y, z);
     this.w = w || this.w;
+  }
+  clone() {
+    return new Vec4(this.x, this.y, this.z, this.w);
   }
 }
 

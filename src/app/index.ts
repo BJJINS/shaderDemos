@@ -2,6 +2,7 @@ import Cube from "@objects/Cube";
 import { Vec3 } from "@core/math/Vector";
 import World from "@core/gl/World";
 import PerspectiveCamera from "@core/camera/Perspective";
+import Sphere from "@objects/Sphere";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
@@ -29,11 +30,15 @@ const cube2 = new Cube({
   depth: 3,
 });
 
+const sphere = new Sphere(1, 4);
+sphere.position.x = 3;
+
 // 第二个立方体：向左平移，便于区分
 cube2.position.x = -3;
 
 world.add(cube);
 world.add(cube2);
+world.add(sphere);
 
 let angle = 0;
 
