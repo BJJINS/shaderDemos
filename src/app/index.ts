@@ -32,8 +32,8 @@ const cube2 = new Cube({
 
 const sphere = new Sphere({
   radius: 1,
-  subdivisions: 6,
-  wireframe: true,
+  subdivisions: 4,
+  // wireframe: true,
 });
 sphere.position.x = 3;
 
@@ -52,7 +52,7 @@ const render = () => {
   angle += 1;
   cube.quaternion.setAxisDegrees(zAxis, angle);
   cube2.quaternion.setAxisDegrees(zAxis, angle);
-  sphere.quaternion.setAxisDegrees(zAxis, angle);
+  sphere.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
   world.render();
   requestAnimationFrame(render);
 };

@@ -11,8 +11,8 @@ import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
 
 class Tetrahedron {
-  private points: Vec3[];
-  private indices: number[][];
+  private points!: Vec3[];
+  private indices!: number[][];
   public indexes!: Uint16Array;
   public vertices!: Float32Array;
   private subdivisions: number;
@@ -20,22 +20,43 @@ class Tetrahedron {
   constructor(subdivisions: number, radius: number) {
     this.subdivisions = subdivisions;
     this.radius = radius;
-    this.points = [
-      new Vec3(0, 0, -1),
-      new Vec3(0, (2 * Math.sqrt(2)) / 3, 1 / 3),
-      new Vec3(-Math.sqrt(6) / 3, -Math.sqrt(2) / 3, 1 / 3),
-      new Vec3(Math.sqrt(6) / 3, -Math.sqrt(2) / 3, 1 / 3),
-    ];
-    this.indices = [
-      [0, 1, 2],
-      [0, 2, 3],
-      [0, 3, 1],
-      [1, 3, 2],
-    ];
+    this.createTetrahedron();
     this.createSphere();
   }
 
-  subdivide() {
+  // 这个版本确定了四个顶点，是对正四面体的简单表达
+  private createTetrahedron() {
+    this.points = [
+      new Vec3(1, 1, 1).normalize(),
+      new Vec3(-1, -1, 1).normalize(),
+      new Vec3(-1, 1, -1).normalize(),
+      new Vec3(1, -1, -1).normalize(),
+    ];
+    this.indices = [
+      [0, 2, 1],
+      [0, 3, 2],
+      [0, 1, 3],
+      [2, 3, 1],
+    ];
+  }
+
+  // 这个版本确定了一个顶点Vec3(0, 0, -1)，然后计算其他三个顶点
+  // private createTetrahedron() {
+  //   this.points = [
+  //     new Vec3(0, 0, -1),
+  //     new Vec3(0, (2 * Math.sqrt(2)) / 3, 1 / 3),
+  //     new Vec3(-Math.sqrt(6) / 3, -Math.sqrt(2) / 3, 1 / 3),
+  //     new Vec3(Math.sqrt(6) / 3, -Math.sqrt(2) / 3, 1 / 3),
+  //   ];
+  //   this.indices = [
+  //     [0, 1, 2],
+  //     [0, 2, 3],
+  //     [0, 3, 1],
+  //     [1, 3, 2],
+  //   ];
+  // }
+
+  private subdivide() {
     const newIndices = [];
     const midpointCache = new Map();
     const getMidpointIndex = (i1: number, i2: number) => {
@@ -64,7 +85,8 @@ class Tetrahedron {
     }
     this.indices = newIndices;
   }
-  createSphere() {
+
+  private createSphere() {
     for (let i = 0; i < this.subdivisions; i++) {
       this.subdivide();
     }
