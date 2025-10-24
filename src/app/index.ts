@@ -30,7 +30,11 @@ const cube2 = new Cube({
   depth: 3,
 });
 
-const sphere = new Sphere(1, 4);
+const sphere = new Sphere({
+  radius: 1,
+  subdivisions: 6,
+  wireframe: true,
+});
 sphere.position.x = 3;
 
 // 第二个立方体：向左平移，便于区分
@@ -48,6 +52,7 @@ const render = () => {
   angle += 1;
   cube.quaternion.setAxisDegrees(zAxis, angle);
   cube2.quaternion.setAxisDegrees(zAxis, angle);
+  sphere.quaternion.setAxisDegrees(zAxis, angle);
   world.render();
   requestAnimationFrame(render);
 };

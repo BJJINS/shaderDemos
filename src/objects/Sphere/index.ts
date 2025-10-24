@@ -1,5 +1,10 @@
 import { getCamera, getGL } from "@core/gl/global";
-import { createIndexBuffer, createProgram, createProgramAttribute, createShader } from "@core/gl/utils";
+import {
+  createIndexBuffer,
+  createProgram,
+  createProgramAttribute,
+  createShader,
+} from "@core/gl/utils";
 import { Vec3 } from "@core/math/Vector";
 import Object3D from "@core/scene/Object3D";
 import vertexShaderSource from "./vertex.glsl";
@@ -74,16 +79,35 @@ class Tetrahedron {
   }
 }
 
+interface Param {
+  radius?: number;
+  subdivisions?: number;
+  wireframe?: boolean;
+}
+
 class Sphere extends Object3D {
-  radius: number;
   subdivisions: number;
-  constructor(radius = 1, subdivisions = 5) {
+  wireframe: boolean;
+  private lineIndices!: Uint16Array;
+  constructor(param: Param) {
     super("sphere");
-    this.radius = radius;
+    const { radius = 1, subdivisions = 5, wireframe = false } = param;
+    this.wireframe = wireframe;
     this.subdivisions = Math.min(subdivisions, 10);
     const tetrahedron = new Tetrahedron(this.subdivisions, radius);
     this.vertices = tetrahedron.vertices!;
     this.indices = tetrahedron.indexes!;
+
+    if (wireframe) {
+      const lineIdx: number[] = [];
+      for (let i = 0; i < this.indices.length; i += 3) {
+        const a = this.indices[i];
+        const b = this.indices[i + 1];
+        const c = this.indices[i + 2];
+        lineIdx.push(a, b, b, c, c, a);
+      }
+      this.lineIndices = new Uint16Array(lineIdx);
+    }
 
     const gl = getGL();
     this.program = this.initial(gl);
@@ -98,7 +122,7 @@ class Sphere extends Object3D {
     const vao = gl.createVertexArray()!;
     gl.bindVertexArray(vao);
     createProgramAttribute(gl, program, 3, this.vertices, "aPosition", gl.FLOAT);
-    createIndexBuffer(gl, this.indices!); 
+    createIndexBuffer(gl, this.wireframe ? this.lineIndices! : this.indices!);
     gl.bindVertexArray(null);
     this.vao = vao;
     return program;
@@ -109,12 +133,17 @@ class Sphere extends Object3D {
     gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
     gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.modelMatrix().glUniformArray());
   }
+
   render() {
     const gl = getGL();
     gl.useProgram(this.program);
     this.uniform(gl);
     gl.bindVertexArray(this.vao);
-    gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
+    if (this.wireframe) {
+      gl.drawElements(gl.LINES, this.lineIndices.length, gl.UNSIGNED_SHORT, 0);
+    } else {
+      gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
+    }
     gl.bindVertexArray(null);
   }
 }
