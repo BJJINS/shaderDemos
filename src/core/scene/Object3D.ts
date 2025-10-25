@@ -1,8 +1,9 @@
+import { getCamera, getGL } from "@core/gl/global";
 import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
 
-abstract class Object3D {
+class Object3D {
   position = new Vec3();
   rotation = new Vec3();
   scale = new Vec3(1, 1, 1);
@@ -18,9 +19,13 @@ abstract class Object3D {
   colors!: Float32Array;
   vao!: WebGLVertexArrayObject;
 
+  lineIndics?: Uint16Array;
+  wireframe = false;
   type: string;
-  constructor(type: string) {
+
+  constructor(type: string, wireframe = false) {
     this.type = type;
+    this.wireframe = wireframe;
   }
   add(child: Object3D) {
     this.children.push(child);
@@ -49,7 +54,36 @@ abstract class Object3D {
     const scaleMatrix = this.handleScale();
     return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)));
   }
-  abstract render(): void;
+  handleLineIndics() {
+    if (this.wireframe && this.indices) {
+      const lineIndics: number[] = [];
+      for (let i = 0; i < this.indices.length; i += 3) {
+        const a = this.indices[i];
+        const b = this.indices[i + 1];
+        const c = this.indices[i + 2];
+        lineIndics.push(a, b, b, c, a, c);
+      }
+      this.lineIndics = new Uint16Array(lineIndics);
+    }
+  }
+  uniform(gl: WebGL2RenderingContext) {
+    const camera = getCamera();
+    gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
+    gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
+    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.modelMatrix().glUniformArray());
+  }
+  render() {
+    const gl = getGL();
+    gl.useProgram(this.program);
+    this.uniform(gl);
+    gl.bindVertexArray(this.vao);
+    if (this.wireframe) {
+      gl.drawElements(gl.LINES, this.lineIndics!.length, gl.UNSIGNED_SHORT, 0);
+    } else {
+      gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
+    }
+    gl.bindVertexArray(null);
+  }
 }
 
 export default Object3D;

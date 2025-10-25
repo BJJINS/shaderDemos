@@ -10,8 +10,19 @@ abstract class Vec {
     this.z = z || 0;
   }
 
-  length() {
+  length(): number {
     return Math.hypot(this.x, this.y, this.z);
+  }
+
+  scale(x: number): this;
+  scale(x: number, y: number, z: number): this;
+  scale(x: number, y?: number, z?: number): this {
+    y = y ?? x;
+    z = z ?? x;
+    this.x *= x;
+    this.y *= y;
+    this.z *= z;
+    return this;
   }
 
   sub(v: Vec): this {

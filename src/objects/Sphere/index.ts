@@ -1,8 +1,8 @@
 import { getCamera, getGL } from "@core/gl/global";
 import {
-  createIndexBuffer,
   createProgram,
   createProgramAttribute,
+  createIndexBuffer,
   createShader,
 } from "@core/gl/utils";
 import { Vec3 } from "@core/math/Vector";
@@ -11,33 +11,22 @@ import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
 
 class Tetrahedron {
-  private points!: Vec3[];
-  private indices!: number[][];
-  public indexes!: Uint16Array;
-  public vertices!: Float32Array;
+  private initialVertices = [
+    new Vec3(1, 1, 1).normalize(),
+    new Vec3(-1, -1, 1).normalize(),
+    new Vec3(-1, 1, -1).normalize(),
+    new Vec3(1, -1, -1).normalize(),
+  ];
+  private initialIndices = [0, 2, 1, 0, 3, 2, 0, 1, 3, 2, 3, 1];
   private subdivisions: number;
-  private radius: number;
-  constructor(subdivisions: number, radius: number) {
-    this.subdivisions = subdivisions;
-    this.radius = radius;
-    this.createTetrahedron();
-    this.createSphere();
-  }
+  private cache: Map<string, number> = new Map();
 
-  // 这个版本确定了四个顶点，是对正四面体的简单表达
-  private createTetrahedron() {
-    this.points = [
-      new Vec3(1, 1, 1).normalize(),
-      new Vec3(-1, -1, 1).normalize(),
-      new Vec3(-1, 1, -1).normalize(),
-      new Vec3(1, -1, -1).normalize(),
-    ];
-    this.indices = [
-      [0, 2, 1],
-      [0, 3, 2],
-      [0, 1, 3],
-      [2, 3, 1],
-    ];
+  vertices!: Float32Array;
+  indices!: Uint16Array;
+
+  constructor(subdivisions = 4) {
+    this.subdivisions = subdivisions;
+    this.createSphere();
   }
 
   // 这个版本确定了一个顶点Vec3(0, 0, -1)，然后计算其他三个顶点
@@ -55,49 +44,50 @@ class Tetrahedron {
   //     [1, 3, 2],
   //   ];
   // }
-
-  private subdivide() {
-    const newIndices = [];
-    const midpointCache = new Map();
-    const getMidpointIndex = (i1: number, i2: number) => {
-      const key = i1 < i2 ? `${i1}-${i2}` : `${i2}-${i1}`;
-      if (midpointCache.has(key)) {
-        return midpointCache.get(key)!;
-      }
-      const p1 = this.points[i1];
-      const p2 = this.points[i2];
-      const midpoint = new Vec3(
-        (p1.x + p2.x) * 0.5,
-        (p1.y + p2.y) * 0.5,
-        (p1.z + p2.z) * 0.5
-      ).normalize();
-      this.points.push(midpoint);
-      const len = this.points.length - 1;
-      midpointCache.set(key, len);
-      return len;
-    };
-    for (let i = 0; i < this.indices.length; i++) {
-      const [a, b, c] = this.indices[i];
-      const ab = getMidpointIndex(a, b);
-      const bc = getMidpointIndex(b, c);
-      const ca = getMidpointIndex(c, a);
-      newIndices.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
+  private getMidpointIndex(i1: number, i2: number) {
+    const key = i1 > i2 ? `${i2}_${i1}` : `${i1}_${i2}`;
+    if (this.cache.has(key)) {
+      return this.cache.get(key)!;
     }
-    this.indices = newIndices;
+    const pointA = this.initialVertices[i1];
+    const pointB = this.initialVertices[i2];
+    const v = new Vec3(
+      (pointA.x + pointB.x) * 0.5,
+      (pointA.y + pointB.y) * 0.5,
+      (pointA.z + pointB.z) * 0.5
+    );
+    v.normalize();
+    this.initialVertices.push(v);
+    const idx = this.initialVertices.length - 1;
+    this.cache.set(key, idx);
+    return idx;
   }
 
+  private subdivide() {
+    const newIndics: number[] = [];
+    for (let i = 0; i < this.initialIndices.length; i += 3) {
+      const a = this.initialIndices[i];
+      const b = this.initialIndices[i + 1];
+      const c = this.initialIndices[i + 2];
+      const ab = this.getMidpointIndex(a, b);
+      const ac = this.getMidpointIndex(a, c);
+      const bc = this.getMidpointIndex(b, c);
+      // 4 个子三角形: (a, ab, ac), (b, bc, ab), (c, ac, bc), (ab, bc, ac)
+      newIndics.push(a, ab, ac, b, bc, ab, c, ac, bc, ab, bc, ac);
+    }
+    this.initialIndices = newIndics;
+  }
   private createSphere() {
     for (let i = 0; i < this.subdivisions; i++) {
       this.subdivide();
     }
-    const vertices: number[] = [];
-    for (let i = 0; i < this.points.length; i++) {
-      const v = this.points[i];
-      vertices.push(v.x * this.radius, v.y * this.radius, v.z * this.radius);
-    }
-    this.vertices = new Float32Array(vertices);
-    const flat = this.indices.flat();
-    this.indexes = new Uint16Array(flat);
+    this.vertices = new Float32Array(
+      this.initialVertices.reduce((res, point) => {
+        res.push(point.x, point.y, point.z);
+        return res;
+      }, [] as number[])
+    );
+    this.indices = new Uint16Array(this.initialIndices);
   }
 }
 
@@ -108,28 +98,19 @@ interface Param {
 }
 
 class Sphere extends Object3D {
+  radius: number;
   subdivisions: number;
-  wireframe: boolean;
-  private lineIndices!: Uint16Array;
+  wireframe = false;
   constructor(param: Param) {
+    const { radius = 1, subdivisions = 4, wireframe = false } = param;
     super("sphere");
-    const { radius = 1, subdivisions = 5, wireframe = false } = param;
+    this.radius = radius;
+    this.scale.scale(radius);
     this.wireframe = wireframe;
     this.subdivisions = Math.min(subdivisions, 10);
-    const tetrahedron = new Tetrahedron(this.subdivisions, radius);
-    this.vertices = tetrahedron.vertices!;
-    this.indices = tetrahedron.indexes!;
-
-    if (wireframe) {
-      const lineIdx: number[] = [];
-      for (let i = 0; i < this.indices.length; i += 3) {
-        const a = this.indices[i];
-        const b = this.indices[i + 1];
-        const c = this.indices[i + 2];
-        lineIdx.push(a, b, b, c, c, a);
-      }
-      this.lineIndices = new Uint16Array(lineIdx);
-    }
+    const tetrahedronSphere = new Tetrahedron(subdivisions);
+    this.vertices = tetrahedronSphere.vertices;
+    this.indices = tetrahedronSphere.indices;
 
     const gl = getGL();
     this.program = this.initial(gl);
@@ -144,29 +125,15 @@ class Sphere extends Object3D {
     const vao = gl.createVertexArray()!;
     gl.bindVertexArray(vao);
     createProgramAttribute(gl, program, 3, this.vertices, "aPosition", gl.FLOAT);
-    createIndexBuffer(gl, this.wireframe ? this.lineIndices! : this.indices!);
+    if (this.wireframe) {
+      this.handleLineIndics();
+      createIndexBuffer(gl, this.lineIndics!);
+    } else {
+      createIndexBuffer(gl, this.indices!);
+    }
     gl.bindVertexArray(null);
     this.vao = vao;
     return program;
-  }
-  uniform(gl: WebGL2RenderingContext) {
-    const camera = getCamera();
-    gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
-    gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
-    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.modelMatrix().glUniformArray());
-  }
-
-  render() {
-    const gl = getGL();
-    gl.useProgram(this.program);
-    this.uniform(gl);
-    gl.bindVertexArray(this.vao);
-    if (this.wireframe) {
-      gl.drawElements(gl.LINES, this.lineIndices.length, gl.UNSIGNED_SHORT, 0);
-    } else {
-      gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
-    }
-    gl.bindVertexArray(null);
   }
 }
 
