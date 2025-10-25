@@ -1,6 +1,8 @@
 import global, { getGL } from "@core/gl/global";
 import Object3D from "@core/scene/Object3D";
 import { Vec4 } from "@core/math/Vector";
+import PerspectiveCamera from "@core/camera/Perspective";
+import OrthographicCamera from "@core/camera/Orthographic";
 
 interface WorldParams {
   clearColor?: Vec4;
@@ -11,7 +13,7 @@ class World extends Object3D {
   canvas: HTMLCanvasElement;
   pixelRatio: number;
   constructor(params?: WorldParams) {
-    super();
+    super("world");
     const { clearColor = new Vec4(1, 1, 1, 1) } = params || {};
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.canvas = this.createCanvas();
@@ -40,16 +42,35 @@ class World extends Object3D {
   }
   resize() {
     window.addEventListener("resize", () => {
-      this.canvas.setAttribute(
-        "style",
-        `width:${window.innerWidth}px;height:${window.innerHeight}px`
-      );
-      const w = window.innerWidth * this.pixelRatio;
-      const h = window.innerHeight * this.pixelRatio;
+      // 更新像素比与画布尺寸
+      this.pixelRatio = Math.min(window.devicePixelRatio, 2);
+      const cssW = window.innerWidth;
+      const cssH = window.innerHeight;
+      this.canvas.setAttribute("style", `width:${cssW}px;height:${cssH}px`);
+      const w = cssW * this.pixelRatio;
+      const h = cssH * this.pixelRatio;
       this.canvas.width = w;
       this.canvas.height = h;
+      // 更新视口
       const gl = getGL();
       gl.viewport(0, 0, w, h);
+      // 更新相机投影，防止拉伸
+      const camera = global.camera;
+      if (camera) {
+        const aspect = cssW / cssH;
+        if (camera.type === "perspective") {
+          (camera as PerspectiveCamera).aspect = aspect;
+          (camera as PerspectiveCamera).updateProjectionMatrix();
+        } else if (camera.type === "orthographic") {
+          const oCam = camera as OrthographicCamera;
+          const height = oCam.top - oCam.bottom;
+          const width = height * aspect;
+          const centerX = (oCam.left + oCam.right) / 2;
+          oCam.left = centerX - width / 2;
+          oCam.right = centerX + width / 2;
+          oCam.updateProjectionMatrix();
+        }
+      }
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // 同时清除两个缓冲区
     });
   }

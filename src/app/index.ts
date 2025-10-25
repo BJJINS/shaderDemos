@@ -14,6 +14,7 @@ camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 10;
 
+
 camera.lookAt(new Vec3(0, 0, 0));
 
 const cube = new Cube({
