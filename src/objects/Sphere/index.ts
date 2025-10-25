@@ -1,14 +1,14 @@
-import { getCamera, getGL } from "@core/gl/global";
+import { getGL } from "@core/gl/global";
 import {
+  createIndexBuffer,
   createProgram,
   createProgramAttribute,
-  createIndexBuffer,
   createShader,
 } from "@core/gl/utils";
 import { Vec3 } from "@core/math/Vector";
 import Object3D from "@core/scene/Object3D";
-import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
+import vertexShaderSource from "./vertex.glsl";
 
 class Tetrahedron {
   private initialVertices = [
@@ -100,7 +100,6 @@ interface Param {
 class Sphere extends Object3D {
   radius: number;
   subdivisions: number;
-  wireframe = false;
   constructor(param: Param) {
     const { radius = 1, subdivisions = 4, wireframe = false } = param;
     super("sphere");
@@ -111,6 +110,7 @@ class Sphere extends Object3D {
     const tetrahedronSphere = new Tetrahedron(subdivisions);
     this.vertices = tetrahedronSphere.vertices;
     this.indices = tetrahedronSphere.indices;
+    
 
     const gl = getGL();
     this.program = this.initial(gl);

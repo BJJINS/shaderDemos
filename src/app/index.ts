@@ -33,7 +33,7 @@ const cube2 = new Cube({
 
 const sphere = new Sphere({
   radius: 1,
-  subdivisions: 4,
+  subdivisions: 5,
   wireframe: true,
 });
 sphere.position.x = 3;
