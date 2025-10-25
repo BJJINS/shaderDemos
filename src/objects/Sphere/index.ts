@@ -1,10 +1,3 @@
-import { getGL } from "@core/gl/global";
-import {
-  createIndexBuffer,
-  createProgram,
-  createProgramAttribute,
-  createShader,
-} from "@core/gl/utils";
 import { Vec3 } from "@core/math/Vector";
 import Object3D from "@core/scene/Object3D";
 import fragmentShaderSource from "./fragment.glsl";
@@ -112,28 +105,7 @@ class Sphere extends Object3D {
     this.indices = tetrahedronSphere.indices;
     
 
-    const gl = getGL();
-    this.program = this.initial(gl);
-    this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
-    this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
-    this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
-  }
-  initial(gl: WebGL2RenderingContext) {
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
-    const program = createProgram(gl, vertexShader, fragmentShader)!;
-    const vao = gl.createVertexArray()!;
-    gl.bindVertexArray(vao);
-    createProgramAttribute(gl, program, 3, this.vertices, "aPosition", gl.FLOAT);
-    if (this.wireframe) {
-      this.handleLineIndics();
-      createIndexBuffer(gl, this.lineIndics!);
-    } else {
-      createIndexBuffer(gl, this.indices!);
-    }
-    gl.bindVertexArray(null);
-    this.vao = vao;
-    return program;
+    this.initial(vertexShaderSource, fragmentShaderSource);
   }
 }
 

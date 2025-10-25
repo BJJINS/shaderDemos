@@ -29,6 +29,7 @@ const cube2 = new Cube({
   width: 1,
   height: 1,
   depth: 3,
+  wireframe: true,
 });
 
 const sphere = new Sphere({

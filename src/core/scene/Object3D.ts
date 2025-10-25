@@ -1,4 +1,10 @@
 import { getCamera, getGL } from "@core/gl/global";
+import {
+  createIndexBuffer,
+  createProgram,
+  createProgramAttribute,
+  createShader,
+} from "@core/gl/utils";
 import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
@@ -29,6 +35,28 @@ class Object3D {
   }
   add(child: Object3D) {
     this.children.push(child);
+  }
+  initial(vertexShaderSource: string, fragmentShaderSource: string) {
+    const gl = getGL();
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
+    this.program = createProgram(gl, vertexShader, fragmentShader)!;
+
+    this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
+    this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
+    this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
+
+    const vao = gl.createVertexArray()!;
+    gl.bindVertexArray(vao);
+    createProgramAttribute(gl, this.program, 3, this.vertices, "aPosition", gl.FLOAT);
+    if (this.wireframe) {
+      this.handleLineIndics();
+      createIndexBuffer(gl, this.lineIndics!);
+    } else {
+      createIndexBuffer(gl, this.indices!);
+    }
+    gl.bindVertexArray(null);
+    this.vao = vao;
   }
   handleRotation() {
     const xMat4 = Transformation.rotationX(this.rotation.x);
