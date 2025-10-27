@@ -32,6 +32,13 @@ abstract class Vec {
     return this;
   }
 
+  add(v: Vec): this {
+    this.x += v.x;
+    this.y += v.y;
+    this.z += v.z;
+    return this;
+  }
+
   dot(v: Vec): number {
     return this.x * v.x + this.y * v.y + this.z * v.z;
   }

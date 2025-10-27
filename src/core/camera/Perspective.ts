@@ -25,7 +25,7 @@ class PerspectiveCamera extends Camera {
       0, f, 0, 0,
       0, 0, -(far + near) / d, -2 * far * near / d,
       0, 0, -1, 0
-    ]).glUniformArray();
+    ]).uniformMatrix;
     global.camera = this;
   }
 }

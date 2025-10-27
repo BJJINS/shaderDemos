@@ -7,9 +7,9 @@ abstract class Camera {
   position = new Vec3();
   // 相机类型：正交或透视
   type: CameraType;
-  viewMatrix = new Mat4().glUniformArray();
+  viewMatrix = new Mat4().uniformMatrix;
   // 投影矩阵：由具体相机实现覆盖
-  projectionMatrix = new Mat4().glUniformArray();
+  projectionMatrix = new Mat4().uniformMatrix; 
   constructor(type: CameraType) {
     this.type = type;
   }
@@ -30,7 +30,7 @@ abstract class Camera {
       view.x, view.y, view.z, -this.position.dot(view),
       0, 0, 0, 1,
     ]);
-    this.viewMatrix = viewMatrix.glUniformArray();
+    this.viewMatrix = viewMatrix.uniformMatrix;
   }
   abstract updateProjectionMatrix(): void;
 }

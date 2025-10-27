@@ -80,7 +80,7 @@ class Object3D {
     const rotationQuaternionMatrix = this.handleQuaternion();
     const translateMatrix = this.handlePosition();
     const scaleMatrix = this.handleScale();
-    return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)));
+    return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix))).uniformMatrix;
   }
   // 处理线框模式
   handleLineIndics() {
@@ -99,7 +99,7 @@ class Object3D {
     const camera = getCamera();
     gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
     gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
-    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.modelMatrix().glUniformArray());
+    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.modelMatrix());
   }
   render() {
     const gl = getGL();
