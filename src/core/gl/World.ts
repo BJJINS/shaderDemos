@@ -9,16 +9,19 @@ interface WorldParams {
   depthTest?: boolean;
 }
 
-class World extends Object3D {
+class World {
+  children: Object3D[] = [];
   canvas: HTMLCanvasElement;
   pixelRatio: number;
   constructor(params?: WorldParams) {
-    super("world");
     const { clearColor = new Vec4(1, 1, 1, 1) } = params || {};
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.canvas = this.createCanvas();
     this.initWebgl2(clearColor);
     this.resize();
+  }
+  add(child: Object3D) {
+    this.children.push(child);
   }
   initWebgl2(clearColor: Vec4) {
     const gl = this.canvas.getContext("webgl2", {

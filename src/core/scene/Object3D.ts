@@ -82,6 +82,7 @@ class Object3D {
     const scaleMatrix = this.handleScale();
     return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)));
   }
+  // 处理线框模式
   handleLineIndics() {
     if (this.wireframe && this.indices) {
       const lineIndics: number[] = [];
