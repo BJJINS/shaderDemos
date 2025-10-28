@@ -2,7 +2,7 @@ import Cube from "@objects/Cube";
 import { Vec3 } from "@core/math/Vector";
 import World from "@core/gl/World";
 import PerspectiveCamera from "@core/camera/Perspective";
-import Sphere from "@objects/Sphere";
+import TetrahedronSphere from "@objects/Sphere/TerahedronSphere";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
@@ -32,7 +32,7 @@ const cube2 = new Cube({
   wireframe: true,
 });
 
-const sphere = new Sphere({
+const sphere = new TetrahedronSphere({
   radius: 1,
   subdivisions: 5,
   wireframe: true,

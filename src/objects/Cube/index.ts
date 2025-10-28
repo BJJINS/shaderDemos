@@ -1,19 +1,20 @@
-import Object3D from "@core/scene/Object3D";
+import Object3D, { type Object3DParams } from "@core/scene/Object3D";
 import fragmentShaderSource from "./fragment.glsl";
 import vertexShaderSource from "./vertex.glsl";
 
-interface CubeParams {
+interface CubeParams extends Object3DParams {
   width: number;
   height: number;
   depth: number;
-  wireframe?: boolean;
 }
 
 class Cube extends Object3D {
   constructor(params: CubeParams) {
-    super("cube");
-    const { width, height, depth, wireframe = false } = params;
-    this.wireframe = wireframe;
+    const { width, height, depth, ...rest } = params;
+    super({
+      type: "cube",
+      ...rest,
+    });
     const w = width / 2;
     const h = height / 2;
     const d = depth / 2;
