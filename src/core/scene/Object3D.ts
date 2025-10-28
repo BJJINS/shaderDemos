@@ -35,31 +35,32 @@ class Object3D {
   add(child: Object3D) {
     this.children.push(child);
   }
+  initialUniformLoc(gl: WebGL2RenderingContext) {
+    this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
+    this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
+    this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
+  }
+
   initial(vertexShaderSource: string, fragmentShaderSource: string) {
     const gl = getGL();
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     this.program = createProgram(gl, vertexShader, fragmentShader)!;
 
-    this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
-    this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
-    this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
+    this.initialUniformLoc(gl);
 
     const vao = gl.createVertexArray()!;
     gl.bindVertexArray(vao);
-    this.handleNormals();
+
+    this.handleNormals(gl);
+
     createProgramAttribute(gl, this.program, 3, this.vertices, "aPosition", gl.FLOAT);
 
-    this.handleLineIndics();
+    this.handleLineIndics(gl);
 
-    if (this.wireframe) {
-      createIndexBuffer(gl, this.lineIndics!);
-    } else if (this.indices) {
+    if (!this.wireframe && this.indices) {
       createIndexBuffer(gl, this.indices!);
     }
-
-    createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
-
     gl.bindVertexArray(null);
     this.vao = vao;
   }
@@ -96,16 +97,38 @@ class Object3D {
       const ib = this.indices![i + 1];
       const ic = this.indices![i + 2];
 
-      const a = new Vec3(this.vertices[ia * 3], this.vertices[ia * 3 + 1], this.vertices[ia * 3 + 2]);
-      const b = new Vec3(this.vertices[ib * 3], this.vertices[ib * 3 + 1], this.vertices[ib * 3 + 2]);
-      const c = new Vec3(this.vertices[ic * 3], this.vertices[ic * 3 + 1], this.vertices[ic * 3 + 2]);
+      const a = new Vec3(
+        this.vertices[ia * 3],
+        this.vertices[ia * 3 + 1],
+        this.vertices[ia * 3 + 2]
+      );
+      const b = new Vec3(
+        this.vertices[ib * 3],
+        this.vertices[ib * 3 + 1],
+        this.vertices[ib * 3 + 2]
+      );
+      const c = new Vec3(
+        this.vertices[ic * 3],
+        this.vertices[ic * 3 + 1],
+        this.vertices[ic * 3 + 2]
+      );
 
       const ba = b.clone().sub(a);
       const ca = c.clone().sub(a);
       const normal = ba.cross(ca).normalize();
 
       vertices.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
-      normals.push(normal.x, normal.y, normal.z, normal.x, normal.y, normal.z, normal.x, normal.y, normal.z);
+      normals.push(
+        normal.x,
+        normal.y,
+        normal.z,
+        normal.x,
+        normal.y,
+        normal.z,
+        normal.x,
+        normal.y,
+        normal.z
+      );
     }
     this.vertices = new Float32Array(vertices);
     this.normals = new Float32Array(normals);
@@ -141,7 +164,7 @@ class Object3D {
     this.normals = normals;
   }
   // 通过顶点计算法线
-  handleNormals() {
+  handleNormals(gl: WebGL2RenderingContext) {
     if (this.wireframe) {
       return;
     }
@@ -150,9 +173,10 @@ class Object3D {
     } else {
       this.smoothNormals();
     }
+    createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
   }
   // 处理线框模式索引
-  handleLineIndics() {
+  handleLineIndics(gl: WebGL2RenderingContext) {
     if (this.wireframe && this.indices) {
       const lineIndics: number[] = [];
       for (let i = 0; i < this.indices.length; i += 3) {
@@ -163,6 +187,7 @@ class Object3D {
       }
       this.lineIndics = new Uint16Array(lineIndics);
     }
+    createIndexBuffer(gl, this.lineIndics!);
   }
   uniform(gl: WebGL2RenderingContext) {
     const camera = getCamera();
@@ -180,7 +205,7 @@ class Object3D {
     } else if (this.indices) {
       gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
     } else {
-      gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3)
+      gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3);
     }
     gl.bindVertexArray(null);
   }

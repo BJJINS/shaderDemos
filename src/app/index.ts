@@ -2,7 +2,7 @@ import Cube from "@objects/Cube";
 import { Vec3 } from "@core/math/Vector";
 import World from "@core/gl/World";
 import PerspectiveCamera from "@core/camera/Perspective";
-import TetrahedronSphere from "@objects/Sphere/TerahedronSphere";
+import TetrahedronSphere from "@objects/Sphere/TetrahedronSphere";
 
 const world = new World();
 const aspect = window.innerWidth / window.innerHeight;
