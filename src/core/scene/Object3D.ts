@@ -9,14 +9,6 @@ import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
 
-interface Params {
-  type: string;
-  wireframe?: boolean;
-  flatShading?: boolean;
-}
-
-export type Object3DParams = Pick<Params, "wireframe">;
-
 class Object3D {
   position = new Vec3();
   rotation = new Vec3();
@@ -30,21 +22,16 @@ class Object3D {
 
   vertices!: Float32Array; // 顶点
   normals!: Float32Array; // 法线
-  indices!: Uint16Array; // 索引
+  indices?: Uint16Array; // 索引
   colors!: Float32Array; // 颜色
   vao!: WebGLVertexArrayObject;
 
   lineIndics?: Uint16Array; // 线框模式索引
   wireframe = false; // 是否线框模式
-  flatShading = false;
-  type: string;
+  normalMode: "smooth" | "flat" = "smooth";
+  type!: string;
 
-  constructor(params: Params) {
-    const { type, wireframe = false, flatShading = false } = params;
-    this.type = type;
-    this.wireframe = wireframe;
-    this.flatShading = flatShading;
-  }
+  constructor() {}
   add(child: Object3D) {
     this.children.push(child);
   }
@@ -62,8 +49,15 @@ class Object3D {
     gl.bindVertexArray(vao);
     this.handleNormals();
     createProgramAttribute(gl, this.program, 3, this.vertices, "aPosition", gl.FLOAT);
+
     this.handleLineIndics();
-    createIndexBuffer(gl, this.wireframe ? this.lineIndics! : this.indices!);
+
+    if (this.wireframe) {
+      createIndexBuffer(gl, this.lineIndics!);
+    } else if (this.indices) {
+      createIndexBuffer(gl, this.indices!);
+    }
+
     createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
 
     gl.bindVertexArray(null);
@@ -94,112 +88,67 @@ class Object3D {
     return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)))
       .uniformMatrix;
   }
+  flatNormals() {
+    const normals: number[] = [];
+    const vertices: number[] = [];
+    for (let i = 0; i < this.indices!.length; i += 3) {
+      const ia = this.indices![i];
+      const ib = this.indices![i + 1];
+      const ic = this.indices![i + 2];
+
+      const a = new Vec3(this.vertices[ia * 3], this.vertices[ia * 3 + 1], this.vertices[ia * 3 + 2]);
+      const b = new Vec3(this.vertices[ib * 3], this.vertices[ib * 3 + 1], this.vertices[ib * 3 + 2]);
+      const c = new Vec3(this.vertices[ic * 3], this.vertices[ic * 3 + 1], this.vertices[ic * 3 + 2]);
+
+      const ba = b.clone().sub(a);
+      const ca = c.clone().sub(a);
+      const normal = ba.cross(ca).normalize();
+
+      vertices.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+      normals.push(normal.x, normal.y, normal.z, normal.x, normal.y, normal.z, normal.x, normal.y, normal.z);
+    }
+    this.vertices = new Float32Array(vertices);
+    this.normals = new Float32Array(normals);
+    this.indices = undefined;
+  }
+  smoothNormals() {
+    const normals = new Float32Array(this.vertices.length);
+    for (let i = 0; i < this.indices!.length; i += 3) {
+      const i3 = i * 3;
+      const ia = this.indices![i3];
+      const ib = this.indices![i3 + 1];
+      const ic = this.indices![i3 + 2];
+      const a = new Vec3(this.vertices[ia], this.vertices[ia + 1], this.vertices[ia + 2]);
+      const b = new Vec3(this.vertices[ib], this.vertices[ib + 1], this.vertices[ib + 2]);
+      const c = new Vec3(this.vertices[ic], this.vertices[ic + 1], this.vertices[ic + 2]);
+
+      const ba = b.clone().sub(a);
+      const ca = c.clone().sub(a);
+      const normal = ba.cross(ca).normalize();
+
+      normals[ia] = normal.x;
+      normals[ia + 1] = normal.y;
+      normals[ia + 2] = normal.z;
+
+      normals[ib] = normal.x;
+      normals[ib + 1] = normal.y;
+      normals[ib + 2] = normal.z;
+
+      normals[ic] = normal.x;
+      normals[ic + 1] = normal.y;
+      normals[ic + 2] = normal.z;
+    }
+    this.normals = normals;
+  }
   // 通过顶点计算法线
   handleNormals() {
-    if (this.flatShading) {
-      const newVertices: number[] = [];
-      const newNormals: number[] = [];
-      const newIndices: number[] = [];
-      let idx = 0;
-      for (let i = 0; i < this.indices.length; i += 3) {
-        const a = this.indices[i];
-        const b = this.indices[i + 1];
-        const c = this.indices[i + 2];
-
-        const ax = this.vertices[a * 3],
-          ay = this.vertices[a * 3 + 1],
-          az = this.vertices[a * 3 + 2];
-        const bx = this.vertices[b * 3],
-          by = this.vertices[b * 3 + 1],
-          bz = this.vertices[b * 3 + 2];
-        const cx = this.vertices[c * 3],
-          cy = this.vertices[c * 3 + 1],
-          cz = this.vertices[c * 3 + 2];
-
-        const bax = bx - ax,
-          bay = by - ay,
-          baz = bz - az;
-        const cax = cx - ax,
-          cay = cy - ay,
-          caz = cz - az;
-        let nx = bay * caz - baz * cay;
-        let ny = baz * cax - bax * caz;
-        let nz = bax * cay - bay * cax;
-        const len = Math.hypot(nx, ny, nz);
-        if (len > 1e-8) {
-          nx /= len;
-          ny /= len;
-          nz /= len;
-        } else {
-          nx = 0;
-          ny = 0;
-          nz = 0;
-        }
-
-        newVertices.push(ax, ay, az, bx, by, bz, cx, cy, cz);
-        newNormals.push(nx, ny, nz, nx, ny, nz, nx, ny, nz);
-        newIndices.push(idx, idx + 1, idx + 2);
-        idx += 3;
-      }
-      this.vertices = new Float32Array(newVertices);
-      this.normals = new Float32Array(newNormals);
-      this.indices = new Uint16Array(newIndices);
+    if (this.wireframe) {
+      return;
+    }
+    if (this.normalMode === "flat") {
+      this.flatNormals();
     } else {
-      const vertexCount = this.vertices.length / 3;
-      const normals = new Float32Array(this.vertices.length);
-      for (let i = 0; i < this.indices.length; i += 3) {
-        const a = this.indices[i];
-        const b = this.indices[i + 1];
-        const c = this.indices[i + 2];
-
-        const ax = this.vertices[a * 3],
-          ay = this.vertices[a * 3 + 1],
-          az = this.vertices[a * 3 + 2];
-        const bx = this.vertices[b * 3],
-          by = this.vertices[b * 3 + 1],
-          bz = this.vertices[b * 3 + 2];
-        const cx = this.vertices[c * 3],
-          cy = this.vertices[c * 3 + 1],
-          cz = this.vertices[c * 3 + 2];
-
-        const bax = bx - ax,
-          bay = by - ay,
-          baz = bz - az;
-        const cax = cx - ax,
-          cay = cy - ay,
-          caz = cz - az;
-
-        const nx = bay * caz - baz * cay;
-        const ny = baz * cax - bax * caz;
-        const nz = bax * cay - bay * cax;
-
-        normals[a * 3] += nx;
-        normals[a * 3 + 1] += ny;
-        normals[a * 3 + 2] += nz;
-        normals[b * 3] += nx;
-        normals[b * 3 + 1] += ny;
-        normals[b * 3 + 2] += nz;
-        normals[c * 3] += nx;
-        normals[c * 3 + 1] += ny;
-        normals[c * 3 + 2] += nz;
-      }
-      for (let i = 0; i < vertexCount; i++) {
-        const ix = i * 3;
-        const nx = normals[ix],
-          ny = normals[ix + 1],
-          nz = normals[ix + 2];
-        const len = Math.hypot(nx, ny, nz);
-        if (len > 1e-8) {
-          normals[ix] = nx / len;
-          normals[ix + 1] = ny / len;
-          normals[ix + 2] = nz / len;
-        } else {
-          normals[ix] = 0;
-          normals[ix + 1] = 0;
-          normals[ix + 2] = 0;
-        }
-      }
-      this.normals = normals;
+      this.smoothNormals();
     }
   }
   // 处理线框模式索引
@@ -228,8 +177,10 @@ class Object3D {
     gl.bindVertexArray(this.vao);
     if (this.wireframe) {
       gl.drawElements(gl.LINES, this.lineIndics!.length, gl.UNSIGNED_SHORT, 0);
-    } else {
+    } else if (this.indices) {
       gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
+    } else {
+      gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3)
     }
     gl.bindVertexArray(null);
   }

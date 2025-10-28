@@ -1,11 +1,12 @@
-import Object3D, { type Object3DParams } from "@core/scene/Object3D";
+import Object3D from "@core/scene/Object3D";
 import vertexShaderSource from "./vertex.glsl";
 import fragmentShaderSource from "./fragment.glsl";
 import { Vec3 } from "@core/math/Vector";
 
-interface TetrahedronSphereParams extends Object3DParams {
+interface TetrahedronSphereParams {
   radius?: number;
   subdivisions?: number;
+  wireframe?: boolean;
 }
 
 const TetrahedronSphereVertices = [
@@ -24,11 +25,10 @@ class TetrahedronSphere extends Object3D {
   private initialIndices = TetrahedronSphereIndices;
   private cache: Map<string, number> = new Map();
   constructor(param: TetrahedronSphereParams) {
-    const { radius = 1, subdivisions = 4, ...rest } = param;
-    super({
-      type: "sphere",
-      ...rest,
-    });
+    const { radius = 1, subdivisions = 4, wireframe = false } = param;
+    super();
+    this.wireframe = wireframe;
+    this.type = "sphere";
     this.radius = radius;
     this.scale.scale(radius); // 将单位球放大到指定半径
     this.subdivisions = Math.min(subdivisions, 10); // 最多细分10次

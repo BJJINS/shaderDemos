@@ -36,6 +36,7 @@ export const createProgramAttribute = (
   type: number
 ) => {
   const attributeLocation = gl.getAttribLocation(program, name);
+  if (attributeLocation === -1) return;
   const buffer = gl.createBuffer()!;
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   // 先写入数据，再设置顶点属性指针

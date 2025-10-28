@@ -51,13 +51,20 @@ abstract class Vec {
   }
 
   normalize(): this {
-    const len = this.length();
+    let len = this.length();
     if (!len) {
       return this;
     }
-    this.x /= len;
-    this.y /= len;
-    this.z /= len;
+    if (len > 1e-8) {
+      this.x /= len;
+      this.y /= len;
+      this.z /= len;
+    } else {
+      this.x = 0;
+      this.y = 0;
+      this.z = 0;
+    }
+
     return this;
   }
 }
