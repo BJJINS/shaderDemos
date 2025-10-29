@@ -1,20 +1,10 @@
-import { Vec3 } from "@core/math/Vector";
+import BlinnPhongLight from "./index";
 
-interface Param {
-  position?: Vec3;
-  color?: Vec3;
-  intensity?: number;
-}
-
-class PointLight {
-  position: Vec3;
-  color: Vec3;
-  intensity: number;
-  constructor(param: Param) {
-    const { position = new Vec3(1, 1, 1), color = new Vec3(1, 1, 1), intensity = 1 } = param;
-    this.position = position;
-    this.color = color;
-    this.intensity = intensity;
+class PointLight extends BlinnPhongLight {
+  constructor() {
+    super("point");
+    this.position.scale(5);
+    this.la.set(0.2, 0.2, 0.2);
   }
 }
 

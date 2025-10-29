@@ -1,4 +1,4 @@
-import global, { getGL } from "@core/gl/global";
+import global from "@core/gl/global";
 import Object3D from "@core/scene/Object3D";
 import { Vec4 } from "@core/math/Vector";
 import PerspectiveCamera from "@core/camera/Perspective";
@@ -55,11 +55,11 @@ class World {
       this.canvas.width = w;
       this.canvas.height = h;
       // 更新视口
-      const gl = getGL();
+      const gl = global.gl;
       gl.viewport(0, 0, w, h);
       // 更新相机投影，防止拉伸
-      const camera = global.camera;
-      if (camera) {
+      if (global.camera) {
+        const camera = global.camera;
         const aspect = cssW / cssH;
         if (camera.type === "perspective") {
           (camera as PerspectiveCamera).aspect = aspect;
@@ -78,9 +78,9 @@ class World {
     });
   }
   render() {
-    const gl = getGL();
+    const gl = global.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    this.children.forEach((child: Object3D) => child.render());
+    this.children.forEach((child: Object3D) => child.renderObject());
   }
 }
 

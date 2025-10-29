@@ -1,7 +1,7 @@
-import Cube from "@objects/Cube";
-import { Vec3, Vec4 } from "@core/math/Vector";
-import World from "@core/gl/World";
 import PerspectiveCamera from "@core/camera/Perspective";
+import World from "@core/gl/World";
+import { Vec3 } from "@core/math/Vector";
+import PointLight from "@core/scene/Light/PointLight";
 import TetrahedronSphere from "@objects/Sphere/TetrahedronSphere";
 
 const world = new World({
@@ -38,6 +38,8 @@ const sphere = new TetrahedronSphere({
   // wireframe: true,
 });
 
+new PointLight();
+
 // 第二个立方体：向左平移，便于区分
 // cube2.position.x = -3;
 
@@ -52,6 +54,8 @@ let angle = 0;
 //   cube.quaternion.setAxisDegrees(zAxis, angle);
 //   cube2.quaternion.setAxisDegrees(zAxis, angle);
 //   sphere.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
+
+
 
 const render = () => {
   angle += 1;

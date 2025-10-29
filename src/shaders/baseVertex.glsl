@@ -12,3 +12,5 @@ out vec3 vNormal;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uModelMatrix;
+
+vec4 ambient, diffuse ,specular;

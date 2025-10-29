@@ -42,7 +42,7 @@ class TetrahedronSphere extends Object3D {
     );
     this.indices = new Uint16Array(this.initialIndices);
 
-    this.initial(vertexShaderSource, fragmentShaderSource);
+    this.initializeObject(vertexShaderSource, fragmentShaderSource);
   }
   // 获取中点索引
   private getMidpointIndex(i1: number, i2: number) {

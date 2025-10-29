@@ -45,7 +45,7 @@ class Cube extends Object3D {
       w, -h, -d, // 右下 后面 
     ]);
     
-    this.initial(vertexShaderSource, fragmentShaderSource);
+    this.initializeObject(vertexShaderSource, fragmentShaderSource);
   }
 }
 

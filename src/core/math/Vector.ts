@@ -67,6 +67,13 @@ abstract class Vec {
 
     return this;
   }
+
+  set(x: number, y: number, z: number): this {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  }
 }
 
 class Vec3 extends Vec {

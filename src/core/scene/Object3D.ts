@@ -1,4 +1,4 @@
-import { getCamera, getGL } from "@core/gl/global";
+import global from "@core/gl/global";
 import {
   createIndexBuffer,
   createProgram,
@@ -8,6 +8,8 @@ import {
 import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
+import type Material from "src/Material/Material";
+import { NormalMaterial } from "./../../Material/Material";
 
 class Object3D {
   position = new Vec3();
@@ -23,7 +25,6 @@ class Object3D {
   vertices!: Float32Array; // 顶点
   normals!: Float32Array; // 法线
   indices?: Uint16Array; // 索引
-  colors!: Float32Array; // 颜色
   vao!: WebGLVertexArrayObject;
 
   lineIndics?: Uint16Array; // 线框模式索引
@@ -35,17 +36,26 @@ class Object3D {
     normal: false,
   };
 
-  constructor() {}
-  add(child: Object3D) {
+  material: Material;
+
+  constructor(material = NormalMaterial) {
+    this.material = material;
+  }
+  public addChild(child: Object3D) {
     this.children.push(child);
   }
-  initialUniformLoc(gl: WebGL2RenderingContext) {
+  private initializeUniformLocations(gl: WebGL2RenderingContext) {
     this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
     this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
     this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
   }
 
-  handleDefines(vertexShaderSource: string) {
+  private applyMaterialColor(fragmentShaderSource: string) {
+    const { x, y, z, w } = this.material.color;
+    return fragmentShaderSource.replace("{{ color }}", `vec4(${x}, ${y}, ${z}, ${w})`);
+  }
+
+  private applyShaderDefines(vertexShaderSource: string) {
     this.defines.normal = !!this.normals;
 
     const keys = Object.keys(this.defines);
@@ -58,23 +68,31 @@ class Object3D {
     }
     return vertexShaderSource.replace("{{ defines }}", str);
   }
-  initial(vertexShaderSource: string, fragmentShaderSource: string) {
-    const gl = getGL();
+  public initializeObject(vertexShaderSource: string, fragmentShaderSource: string) {
+    const gl = global.gl;
 
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, this.handleDefines(vertexShaderSource))!;
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
+    const vertexShader = createShader(
+      gl,
+      gl.VERTEX_SHADER,
+      this.applyShaderDefines(vertexShaderSource)
+    )!;
+    const fragmentShader = createShader(
+      gl,
+      gl.FRAGMENT_SHADER,
+      this.applyMaterialColor(fragmentShaderSource)
+    )!;
     this.program = createProgram(gl, vertexShader, fragmentShader)!;
 
-    this.initialUniformLoc(gl);
+    this.initializeUniformLocations(gl);
 
     const vao = gl.createVertexArray()!;
     gl.bindVertexArray(vao);
 
-    this.handleNormals(gl);
+    this.prepareNormalAttributes(gl);
 
     createProgramAttribute(gl, this.program, 3, this.vertices, "aPosition", gl.FLOAT);
 
-    this.handleLineIndics(gl);
+    this.prepareWireframeIndices(gl);
 
     if (!this.wireframe && this.indices) {
       createIndexBuffer(gl, this.indices!);
@@ -82,32 +100,32 @@ class Object3D {
     gl.bindVertexArray(null);
     this.vao = vao;
   }
-  handleRotation() {
+  private computeRotationMatrix() {
     const xMat4 = Transformation.rotationX(this.rotation.x);
     const yMat4 = Transformation.rotationY(this.rotation.y);
     const zMat4 = Transformation.rotationZ(this.rotation.z);
     return xMat4.mult(yMat4.mult(zMat4));
   }
-  handlePosition() {
+  private computeTranslationMatrix() {
     const { x, y, z } = this.position;
     return Transformation.translate(x, y, z);
   }
-  handleScale() {
+  private computeScaleMatrix() {
     const { x, y, z } = this.scale;
     return Transformation.scale(x, y, z);
   }
-  handleQuaternion() {
+  private computeQuaternionMatrix() {
     return this.quaternion.toMatrix();
   }
-  modelMatrix() {
-    const rotationMatrix = this.handleRotation();
-    const rotationQuaternionMatrix = this.handleQuaternion();
-    const translateMatrix = this.handlePosition();
-    const scaleMatrix = this.handleScale();
+  private composeModelMatrix() {
+    const rotationMatrix = this.computeRotationMatrix();
+    const rotationQuaternionMatrix = this.computeQuaternionMatrix();
+    const translateMatrix = this.computeTranslationMatrix();
+    const scaleMatrix = this.computeScaleMatrix();
     return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)))
       .uniformMatrix;
   }
-  flatNormals() {
+  private generateFlatNormals() {
     const normals: number[] = [];
     const vertices: number[] = [];
     for (let i = 0; i < this.indices!.length; i += 3) {
@@ -152,7 +170,7 @@ class Object3D {
     this.normals = new Float32Array(normals);
     this.indices = undefined;
   }
-  smoothNormals() {
+  private generateSmoothNormals() {
     const normals = new Float32Array(this.vertices.length);
     for (let i = 0; i < this.indices!.length; i += 3) {
       const i3 = i * 3;
@@ -182,19 +200,19 @@ class Object3D {
     this.normals = normals;
   }
   // 通过顶点计算法线
-  handleNormals(gl: WebGL2RenderingContext) {
+  private prepareNormalAttributes(gl: WebGL2RenderingContext) {
     if (this.wireframe) {
       return;
     }
     if (this.normalMode === "flat") {
-      this.flatNormals();
+      this.generateFlatNormals();
     } else {
-      this.smoothNormals();
+      this.generateSmoothNormals();
     }
     createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
   }
   // 处理线框模式索引
-  handleLineIndics(gl: WebGL2RenderingContext) {
+  private prepareWireframeIndices(gl: WebGL2RenderingContext) {
     if (this.wireframe && this.indices) {
       const lineIndics: number[] = [];
       for (let i = 0; i < this.indices.length; i += 3) {
@@ -207,16 +225,16 @@ class Object3D {
     }
     createIndexBuffer(gl, this.lineIndics!);
   }
-  uniform(gl: WebGL2RenderingContext) {
-    const camera = getCamera();
+  private uploadUniformMatrices(gl: WebGL2RenderingContext) {
+    const camera = global.camera;
     gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
     gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
-    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.modelMatrix());
+    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.composeModelMatrix());
   }
-  render() {
-    const gl = getGL();
+  public renderObject() {
+    const gl = global.gl;
     gl.useProgram(this.program);
-    this.uniform(gl);
+    this.uploadUniformMatrices(gl);
     gl.bindVertexArray(this.vao);
     if (this.wireframe) {
       gl.drawElements(gl.LINES, this.lineIndics!.length, gl.UNSIGNED_SHORT, 0);
