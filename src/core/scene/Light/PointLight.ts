@@ -7,14 +7,14 @@ interface Param {
 }
 
 class PointLight {
-  position = new Vec3(1, 1, 1);
-  color = new Vec3(1, 1, 1);
-  intensity = 1;
+  position: Vec3;
+  color: Vec3;
+  intensity: number;
   constructor(param: Param) {
-    const { position, color, intensity } = param;
-    if (position) this.position = position;
-    if (color) this.color = color;
-    if (intensity) this.intensity = intensity;
+    const { position = new Vec3(1, 1, 1), color = new Vec3(1, 1, 1), intensity = 1 } = param;
+    this.position = position;
+    this.color = color;
+    this.intensity = intensity;
   }
 }
 

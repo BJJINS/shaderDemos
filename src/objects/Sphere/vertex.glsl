@@ -1,12 +1,6 @@
-#version 300 es
-
-in vec3 aPosition;
-
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
-uniform mat4 uModelMatrix;
-
+#include "../../shaders/baseVertex.glsl"
 
 void main() {
+    #include "../../shaders/normalMatrix.glsl"
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
 }

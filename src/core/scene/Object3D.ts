@@ -31,6 +31,10 @@ class Object3D {
   normalMode: "smooth" | "flat" = "smooth";
   type!: string;
 
+  defines = {
+    normal: false,
+  };
+
   constructor() {}
   add(child: Object3D) {
     this.children.push(child);
@@ -41,9 +45,23 @@ class Object3D {
     this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
   }
 
+  handleDefines(vertexShaderSource: string) {
+    this.defines.normal = !!this.normals;
+
+    const keys = Object.keys(this.defines);
+    let str = "";
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i] as keyof typeof this.defines;
+      if (this.defines[key]) {
+        str += `#define ${key.toUpperCase()}\n`;
+      }
+    }
+    return vertexShaderSource.replace("{{ defines }}", str);
+  }
   initial(vertexShaderSource: string, fragmentShaderSource: string) {
     const gl = getGL();
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource)!;
+
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, this.handleDefines(vertexShaderSource))!;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource)!;
     this.program = createProgram(gl, vertexShader, fragmentShader)!;
 
