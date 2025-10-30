@@ -3,7 +3,6 @@ import World from "@core/gl/World";
 import { Vec3 } from "@core/math/Vector";
 import PointLight from "@core/scene/Light/PointLight";
 import Cube from "@objects/Cube";
-import TetrahedronSphere from "@objects/Sphere/TetrahedronSphere";
 
 const world = new World({
 });
@@ -22,6 +21,7 @@ const cube = new Cube({
   width: 1,
   height: 1,
   depth: 1,
+  wireframe: true,
 });
 
 cube.rotation.y = 45;
@@ -30,17 +30,19 @@ world.addObjects(cube);
 world.addLights(new PointLight());
 
 
-// let angle = 0;
+let angle = 0;
 
-// const zAxis = new Vec3(1, 0, 1);
+const zAxis = new Vec3(1, 0, 1);
 
-//   cube.quaternion.setAxisDegrees(zAxis, angle);
+  cube.quaternion.setAxisDegrees(zAxis, angle);
 //   cube2.quaternion.setAxisDegrees(zAxis, angle);
 //   sphere.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
 
 
 
 const render = () => {
+  angle += 1;
+  cube.quaternion.setAxisDegrees(zAxis, angle);
   world.render();
   requestAnimationFrame(render);
 };

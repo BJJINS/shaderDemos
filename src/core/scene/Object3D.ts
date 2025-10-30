@@ -70,10 +70,10 @@ class Object3D {
     gl.bindVertexArray(vao);
 
     createProgramAttribute(gl, this.program, 3, this.vertices, "aPosition", gl.FLOAT);
-    createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
-
+    if (this.normals) {
+      createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
+    }
     this.prepareWireframeIndices(gl);
-
     if (!this.wireframe && this.indices) {
       createIndexBuffer(gl, this.indices!);
     }
@@ -86,30 +86,16 @@ class Object3D {
     const zMat4 = Transformation.rotationZ(this.rotation.z);
     return xMat4.mult(yMat4.mult(zMat4));
   }
-  private computeTranslationMatrix() {
-    const { x, y, z } = this.position;
-    return Transformation.translate(x, y, z);
-  }
-  private computeScaleMatrix() {
-    const { x, y, z } = this.scale;
-    return Transformation.scale(x, y, z);
-  }
-  private computeQuaternionMatrix() {
-    return this.quaternion.toMatrix();
-  }
   private composeModelMatrix() {
     const rotationMatrix = this.computeRotationMatrix();
-    const rotationQuaternionMatrix = this.computeQuaternionMatrix();
-    const translateMatrix = this.computeTranslationMatrix();
-    const scaleMatrix = this.computeScaleMatrix();
-    return translateMatrix.mult(scaleMatrix.mult(rotationQuaternionMatrix.mult(rotationMatrix)))
+    const translateMatrix = Transformation.translate(this.position.x, this.position.y, this.position.z);
+    const scaleMatrix = Transformation.scale(this.scale.x, this.scale.y, this.scale.z);
+    return translateMatrix.mult(scaleMatrix.mult(this.quaternion.toMatrix().mult(rotationMatrix)))
       .uniformMatrix;
   }
   // 通过顶点计算法线
   private prepareNormalAttributes() {
-    if (this.wireframe) {
-      return;
-    }
+    if (this.wireframe) return;
     if (this.normalMode === "flat") {
       const { vertices, normals } = generateFlatNormals(this.indices!, this.vertices);
       this.vertices = vertices;
@@ -130,8 +116,8 @@ class Object3D {
         lineIndics.push(a, b, b, c, a, c);
       }
       this.lineIndics = new Uint16Array(lineIndics);
+      createIndexBuffer(gl, this.lineIndics!);
     }
-    createIndexBuffer(gl, this.lineIndics!);
   }
   private uploadUniformMatrices(gl: WebGL2RenderingContext) {
     const camera = global.camera;
