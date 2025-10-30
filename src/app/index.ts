@@ -17,8 +17,7 @@ camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
-// Build instance transforms (column-major) for a grid of cubes
-const grid = 12; // 12x12 = 144 instances
+const grid = 4;
 const spacing = 1.5;
 const count = grid * grid;
 const instanceMatrices = new Float32Array(count * 16);
@@ -29,7 +28,6 @@ for (let y = 0; y < grid; y++) {
     const ty = (y - (grid - 1) / 2) * spacing;
     const tz = 0;
     const base = idx * 16;
-    // column-major identity with translation in last column
     instanceMatrices[base + 0] = 1;  instanceMatrices[base + 1] = 0;  instanceMatrices[base + 2] = 0;  instanceMatrices[base + 3] = 0;
     instanceMatrices[base + 4] = 0;  instanceMatrices[base + 5] = 1;  instanceMatrices[base + 6] = 0;  instanceMatrices[base + 7] = 0;
     instanceMatrices[base + 8] = 0;  instanceMatrices[base + 9] = 0;  instanceMatrices[base +10] = 1;  instanceMatrices[base +11] = 0;
@@ -42,15 +40,15 @@ const cube = new Cube({
   width: 0.8,
   height: 0.8,
   depth: 0.8,
-  instanceMatrices,
-  instanceCount: count,
+  // instanceMatrices,
+  // instanceCount: count,
 });
 
 world.addObjects(cube);
 world.addLights(new PointLight());
 
 let angle = 0;
-const zAxis = new Vec3(1, 0, 1);
+const zAxis = new Vec3(1, 1, 0);
 
 const render = () => {
   angle += 0.5;

@@ -23,4 +23,4 @@ in mat4 aInstanceMatrix;
 #define MODEL_MATRIX (uModelMatrix)
 #endif
 
-vec4 ambient, diffuse ,specular;
+// vec4 ambient, diffuse ,specular;

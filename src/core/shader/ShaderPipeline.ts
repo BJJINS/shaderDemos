@@ -45,7 +45,7 @@ const applyMaterialColor: ShaderProcessor = (io, ctx) => {
   const { x, y, z, w } = ctx.material.color;
   return {
     ...io,
-    fragment: io.fragment.replace("{{ color }}", `vec4(${x}, ${y}, ${z}, ${w})`),
+    fragment: io.fragment.replace("{{ color }}", `vec4 color = vec4(${x}, ${y}, ${z}, ${w})`),
   };
 };
 

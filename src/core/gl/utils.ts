@@ -47,7 +47,6 @@ export const createProgramAttribute = (
   gl.vertexAttribPointer(attributeLocation, size, type, false, 0, 0);
 };
 
-// Bind a mat4 as an instanced attribute (occupies 4 consecutive attribute locations)
 export const createInstancedMat4Attribute = (
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
