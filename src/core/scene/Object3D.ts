@@ -1,18 +1,11 @@
 import global from "@core/gl/global";
-import {
-  createIndexBuffer,
-  createProgram,
-  createProgramAttribute,
-  createShader,
-  generateFlatNormals,
-  generateSmoothNormals,
-  createInstancedMat4Attribute,
-} from "@core/gl/utils";
 import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
 import { NormalMaterial } from "./../../Material/Material";
-import { withDefaultObject3DProcessors } from "@core/shader/ShaderPipeline";
+import { buildProgramWithPipeline, getUniformLocations } from "@core/scene/Object3D/shader";
+import { prepareNormalAttributes } from "@core/scene/Object3D/geometry";
+import { createObjectVAO, updateInstanceBuffer } from "@core/scene/Object3D/vao";
 
 class Object3D {
   position = new Vec3();
@@ -26,7 +19,7 @@ class Object3D {
   modelMatrixUniformLoc!: WebGLUniformLocation;
 
   vertices!: Float32Array; // 顶点
-  normals!: Float32Array; // 法线
+  normals?: Float32Array; // 法线
   indices?: Uint16Array; // 索引
   vao!: WebGLVertexArrayObject;
 
@@ -53,46 +46,46 @@ class Object3D {
   public addChild(child: Object3D) {
     this.children.push(child);
   }
-  private initializeUniformLocations(gl: WebGL2RenderingContext) {
-    this.viewMatrixUniformLoc = gl.getUniformLocation(this.program, "uViewMatrix")!;
-    this.projectionMatrixUniformLoc = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
-    this.modelMatrixUniformLoc = gl.getUniformLocation(this.program, "uModelMatrix")!;
-  }
   public initializeObject(vertexShaderSource: string, fragmentShaderSource: string) {
     const gl = global.gl;
 
-    this.prepareNormalAttributes();
+    const prepared = prepareNormalAttributes({
+      vertices: this.vertices,
+      indices: this.indices,
+      wireframe: this.wireframe,
+      normalMode: this.normalMode,
+    });
+    this.vertices = prepared.vertices;
+    this.normals = prepared.normals;
+    this.indices = prepared.indices;
+
     // Sync define for instancing
     this.defines.instanced = this.instanced;
-    const pipeline = withDefaultObject3DProcessors();
-    const processed = pipeline.run(
-      { vertex: vertexShaderSource, fragment: fragmentShaderSource },
-      { defines: this.defines, normals: this.normals, material: this.material }
-    );
 
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, processed.vertex)!;
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, processed.fragment)!;
-    this.program = createProgram(gl, vertexShader, fragmentShader)!;
+    this.program = buildProgramWithPipeline(gl, {
+      vertex: vertexShaderSource,
+      fragment: fragmentShaderSource,
+      defines: this.defines,
+      normals: this.normals,
+      material: this.material,
+    });
 
-    this.initializeUniformLocations(gl);
+    const { viewMatrixUniformLoc, projectionMatrixUniformLoc, modelMatrixUniformLoc } = getUniformLocations(gl, this.program);
+    this.viewMatrixUniformLoc = viewMatrixUniformLoc;
+    this.projectionMatrixUniformLoc = projectionMatrixUniformLoc;
+    this.modelMatrixUniformLoc = modelMatrixUniformLoc;
 
-    const vao = gl.createVertexArray()!;
-    gl.bindVertexArray(vao);
-
-    createProgramAttribute(gl, this.program, 3, this.vertices, "aPosition", gl.FLOAT);
-    if (this.normals) {
-      createProgramAttribute(gl, this.program, 3, this.normals, "aNormal", gl.FLOAT);
-    }
-    this.prepareWireframeIndices(gl);
-    if (!this.wireframe && this.indices) {
-      createIndexBuffer(gl, this.indices!);
-    }
-
-    if (this.instanced && this.instanceMatrices) {
-      this.instanceBuffer = createInstancedMat4Attribute(gl, this.program, "aInstanceMatrix", this.instanceMatrices);
-    }
-    gl.bindVertexArray(null);
+    const { vao, lineIndics, instanceBuffer } = createObjectVAO(gl, this.program, {
+      vertices: this.vertices,
+      normals: this.normals,
+      indices: this.indices,
+      wireframe: this.wireframe,
+      instanced: this.instanced,
+      instanceMatrices: this.instanceMatrices,
+    });
     this.vao = vao;
+    this.lineIndics = lineIndics;
+    this.instanceBuffer = instanceBuffer;
   }
   private computeRotationMatrix() {
     const xMat4 = Transformation.rotationX(this.rotation.x);
@@ -107,32 +100,6 @@ class Object3D {
     return translateMatrix.mult(scaleMatrix.mult(this.quaternion.toMatrix().mult(rotationMatrix)))
       .uniformMatrix;
   }
-  // 通过顶点计算法线
-  private prepareNormalAttributes() {
-    if (this.wireframe) return;
-    if (this.normalMode === "flat") {
-      const { vertices, normals } = generateFlatNormals(this.indices!, this.vertices);
-      this.vertices = vertices;
-      this.normals = normals;
-      this.indices = undefined;
-    } else {
-      this.normals = generateSmoothNormals(this.indices!, this.vertices!);
-    }
-  }
-  // 处理线框模式索引
-  private prepareWireframeIndices(gl: WebGL2RenderingContext) {
-    if (this.wireframe && this.indices) {
-      const lineIndics: number[] = [];
-      for (let i = 0; i < this.indices.length; i += 3) {
-        const a = this.indices[i];
-        const b = this.indices[i + 1];
-        const c = this.indices[i + 2];
-        lineIndics.push(a, b, b, c, a, c);
-      }
-      this.lineIndics = new Uint16Array(lineIndics);
-      createIndexBuffer(gl, this.lineIndics!);
-    }
-  }
   private uploadUniformMatrices(gl: WebGL2RenderingContext) {
     const camera = global.camera;
     gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
@@ -144,10 +111,7 @@ class Object3D {
     const gl = global.gl;
     this.instanceMatrices = mats;
     if (typeof count === "number") this.instanceCount = count;
-    gl.bindVertexArray(this.vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, mats, gl.DYNAMIC_DRAW);
-    gl.bindVertexArray(null);
+    updateInstanceBuffer(gl, this.vao, this.instanceBuffer, mats);
   }
   public renderObject() {
     const gl = global.gl;
