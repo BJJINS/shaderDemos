@@ -3,6 +3,7 @@ import Object3D from "@core/scene/Object3D";
 import { Vec4 } from "@core/math/Vector";
 import PerspectiveCamera from "@core/camera/Perspective";
 import OrthographicCamera from "@core/camera/Orthographic";
+import BlinnPhongLight from "@core/scene/Light";
 
 interface WorldParams {
   clearColor?: Vec4;
@@ -10,9 +11,10 @@ interface WorldParams {
 }
 
 class World {
-  children: Object3D[] = [];
-  canvas: HTMLCanvasElement;
-  pixelRatio: number;
+  private children: Object3D[] = [];
+  private canvas: HTMLCanvasElement;
+  private pixelRatio: number;
+  private lights: BlinnPhongLight[] = [];
   constructor(params?: WorldParams) {
     const { clearColor = new Vec4(1, 1, 1, 1) } = params || {};
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
@@ -20,10 +22,15 @@ class World {
     this.initWebgl2(clearColor);
     this.resize();
   }
-  add(child: Object3D) {
-    this.children.push(child);
+  addObjects(...rest: Object3D[]) {
+    this.children.push(...rest);
   }
-  initWebgl2(clearColor: Vec4) {
+
+  addLights(...rest: BlinnPhongLight[]) {
+    this.lights.push(...rest);
+  }
+
+  private initWebgl2(clearColor: Vec4) {
     const gl = this.canvas.getContext("webgl2", {
       antialias: this.pixelRatio < 2,
     })!;
@@ -35,7 +42,7 @@ class World {
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     global.gl = gl;
   }
-  createCanvas() {
+  private createCanvas() {
     const canvas = document.createElement("canvas");
     canvas.setAttribute("style", `width:${window.innerWidth}px;height:${window.innerHeight}px`);
     canvas.width = window.innerWidth * this.pixelRatio;
@@ -43,7 +50,7 @@ class World {
     document.body.appendChild(canvas);
     return canvas;
   }
-  resize() {
+  private resize() {
     window.addEventListener("resize", () => {
       // 更新像素比与画布尺寸
       this.pixelRatio = Math.min(window.devicePixelRatio, 2);
@@ -77,7 +84,7 @@ class World {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // 同时清除两个缓冲区
     });
   }
-  render() {
+  public render() {
     const gl = global.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.children.forEach((child: Object3D) => child.renderObject());

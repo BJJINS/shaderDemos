@@ -2,6 +2,7 @@ import PerspectiveCamera from "@core/camera/Perspective";
 import World from "@core/gl/World";
 import { Vec3 } from "@core/math/Vector";
 import PointLight from "@core/scene/Light/PointLight";
+import Cube from "@objects/Cube";
 import TetrahedronSphere from "@objects/Sphere/TetrahedronSphere";
 
 const world = new World({
@@ -17,37 +18,19 @@ camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
-// const cube = new Cube({
-//   width: 1,
-//   height: 1,
-//   depth: 1,
-// });
-
-// cube.rotation.y = 45;
-
-// const cube2 = new Cube({
-//   width: 1,
-//   height: 1,
-//   depth: 3,
-//   wireframe: true,
-// });
-
-const sphere = new TetrahedronSphere({
-  radius: 1,
-  subdivisions: 5,
-  // wireframe: true,
+const cube = new Cube({
+  width: 1,
+  height: 1,
+  depth: 1,
 });
 
-new PointLight();
+cube.rotation.y = 45;
 
-// 第二个立方体：向左平移，便于区分
-// cube2.position.x = -3;
+world.addObjects(cube);
+world.addLights(new PointLight());
 
-// world.add(cube);
-// world.add(cube2);
-world.add(sphere);
 
-let angle = 0;
+// let angle = 0;
 
 // const zAxis = new Vec3(1, 0, 1);
 
@@ -58,8 +41,6 @@ let angle = 0;
 
 
 const render = () => {
-  angle += 1;
-  sphere.quaternion.setAxisDegrees(new Vec3(1, 1, 0), angle);
   world.render();
   requestAnimationFrame(render);
 };

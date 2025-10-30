@@ -1,12 +1,9 @@
 import type Camera from "@core/camera/Camera";
-import type Light from "@core/scene/Light";
 
 class GlobalContext {
   private static instance: GlobalContext;
   private _gl: WebGL2RenderingContext | null = null;
   private _camera: Camera | null = null;
-
-  lights: Light[] = [];
 
   constructor() {}
 

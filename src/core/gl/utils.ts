@@ -1,3 +1,5 @@
+import { Vec3 } from "@core/math/Vector";
+
 export const createShader = (gl: WebGL2RenderingContext, type: GLenum, source: string) => {
   const shader = gl.createShader(type)!;
   gl.shaderSource(shader, source);
@@ -46,9 +48,8 @@ export const createProgramAttribute = (
 };
 
 export const degreesToRadians = (degrees: number) => {
-  return degrees / 180 * Math.PI;
+  return (degrees / 180) * Math.PI;
 };
-
 
 export const createIndexBuffer = (gl: WebGL2RenderingContext, indices: Uint16Array) => {
   const buffer = gl.createBuffer()!;
@@ -56,4 +57,69 @@ export const createIndexBuffer = (gl: WebGL2RenderingContext, indices: Uint16Arr
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
   return buffer;
 };
-  
+
+export const generateFlatNormals = (originIndices: Uint16Array, originVertices: Float32Array) => {
+  const normals: number[] = [];
+  const vertices: number[] = [];
+  for (let i = 0; i < originIndices.length; i += 3) {
+    const ia = originIndices[i];
+    const ib = originIndices[i + 1];  
+    const ic = originIndices[i + 2];
+
+    const a = new Vec3(originVertices[ia * 3], originVertices[ia * 3 + 1], originVertices[ia * 3 + 2]);
+    const b = new Vec3(originVertices[ib * 3], originVertices[ib * 3 + 1], originVertices[ib * 3 + 2]);
+    const c = new Vec3(originVertices[ic * 3], originVertices[ic * 3 + 1], originVertices[ic * 3 + 2]);
+
+    const ba = b.clone().sub(a);
+    const ca = c.clone().sub(a);
+    const normal = ba.cross(ca).normalize();
+
+    vertices.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+    normals.push(
+      normal.x,
+      normal.y,
+      normal.z,
+      normal.x,
+      normal.y,
+      normal.z,
+      normal.x,
+      normal.y,
+      normal.z
+    );
+  }
+  return {
+    vertices: new Float32Array(vertices),
+    normals: new Float32Array(normals),
+  };
+};
+
+
+export const generateSmoothNormals = (originIndices: Uint16Array, originVertices: Float32Array) => {
+      const normals = new Float32Array(originVertices.length);
+    for (let i = 0; i < originIndices.length; i += 3) {
+      const i3 = i * 3;
+      const ia = originIndices[i3]; 
+      const ib = originIndices[i3 + 1];
+      const ic = originIndices[i3 + 2];
+      const a = new Vec3(originVertices[ia], originVertices[ia + 1], originVertices[ia + 2]);
+      const b = new Vec3(originVertices[ib], originVertices[ib + 1], originVertices[ib + 2]);
+      const c = new Vec3(originVertices[ic], originVertices[ic + 1], originVertices[ic + 2]);
+
+      const ba = b.clone().sub(a);
+      const ca = c.clone().sub(a);
+      const normal = ba.cross(ca).normalize();
+
+      normals[ia] = normal.x;
+      normals[ia + 1] = normal.y;
+      normals[ia + 2] = normal.z;
+
+      normals[ib] = normal.x;
+      normals[ib + 1] = normal.y;
+      normals[ib + 2] = normal.z;
+
+      normals[ic] = normal.x;
+      normals[ic + 1] = normal.y;
+      normals[ic + 2] = normal.z;
+    }
+    return normals;
+}
