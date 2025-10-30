@@ -17,31 +17,43 @@ camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
-const cube = new Cube({
-  width: 1,
-  height: 1,
-  depth: 1,
-  wireframe: true,
-});
+// Build instance transforms (column-major) for a grid of cubes
+const grid = 12; // 12x12 = 144 instances
+const spacing = 1.5;
+const count = grid * grid;
+const instanceMatrices = new Float32Array(count * 16);
+let idx = 0;
+for (let y = 0; y < grid; y++) {
+  for (let x = 0; x < grid; x++) {
+    const tx = (x - (grid - 1) / 2) * spacing;
+    const ty = (y - (grid - 1) / 2) * spacing;
+    const tz = 0;
+    const base = idx * 16;
+    // column-major identity with translation in last column
+    instanceMatrices[base + 0] = 1;  instanceMatrices[base + 1] = 0;  instanceMatrices[base + 2] = 0;  instanceMatrices[base + 3] = 0;
+    instanceMatrices[base + 4] = 0;  instanceMatrices[base + 5] = 1;  instanceMatrices[base + 6] = 0;  instanceMatrices[base + 7] = 0;
+    instanceMatrices[base + 8] = 0;  instanceMatrices[base + 9] = 0;  instanceMatrices[base +10] = 1;  instanceMatrices[base +11] = 0;
+    instanceMatrices[base +12] = tx; instanceMatrices[base +13] = ty; instanceMatrices[base +14] = tz; instanceMatrices[base +15] = 1;
+    idx++;
+  }
+}
 
-cube.rotation.y = 45;
+const cube = new Cube({
+  width: 0.8,
+  height: 0.8,
+  depth: 0.8,
+  instanceMatrices,
+  instanceCount: count,
+});
 
 world.addObjects(cube);
 world.addLights(new PointLight());
 
-
 let angle = 0;
-
 const zAxis = new Vec3(1, 0, 1);
 
-  cube.quaternion.setAxisDegrees(zAxis, angle);
-//   cube2.quaternion.setAxisDegrees(zAxis, angle);
-//   sphere.quaternion.setAxisDegrees(new Vec3(1, 0, 0), angle);
-
-
-
 const render = () => {
-  angle += 1;
+  angle += 0.5;
   cube.quaternion.setAxisDegrees(zAxis, angle);
   world.render();
   requestAnimationFrame(render);

@@ -7,6 +7,9 @@ interface TetrahedronSphereParams {
   radius?: number;
   subdivisions?: number;
   wireframe?: boolean;
+  // Instancing
+  instanceMatrices?: Float32Array;
+  instanceCount?: number;
 }
 
 const TetrahedronSphereVertices = [
@@ -25,7 +28,7 @@ class TetrahedronSphere extends Object3D {
   private initialIndices = TetrahedronSphereIndices;
   private cache: Map<string, number> = new Map();
   constructor(param: TetrahedronSphereParams) {
-    const { radius = 1, subdivisions = 4, wireframe = false } = param;
+    const { radius = 1, subdivisions = 4, wireframe = false, instanceMatrices, instanceCount } = param;
     super();
     this.wireframe = wireframe;
     this.type = "sphere";
@@ -41,6 +44,12 @@ class TetrahedronSphere extends Object3D {
       }, [] as number[])
     );
     this.indices = new Uint16Array(this.initialIndices);
+
+    if (instanceMatrices && instanceCount && instanceCount > 0) {
+      this.instanced = true;
+      this.instanceMatrices = instanceMatrices;
+      this.instanceCount = instanceCount;
+    }
 
     this.initializeObject(vertexShaderSource, fragmentShaderSource);
   }

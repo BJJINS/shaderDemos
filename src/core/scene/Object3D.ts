@@ -6,6 +6,7 @@ import {
   createShader,
   generateFlatNormals,
   generateSmoothNormals,
+  createInstancedMat4Attribute,
 } from "@core/gl/utils";
 import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
@@ -37,9 +38,16 @@ class Object3D {
   defines = {
     normal: false,
     light: false,
+    instanced: false,
   };
 
   material = NormalMaterial;
+
+  // Instancing
+  instanced = false;
+  instanceCount = 0;
+  instanceMatrices?: Float32Array;
+  instanceBuffer?: WebGLBuffer;
 
   constructor() {}
   public addChild(child: Object3D) {
@@ -54,6 +62,8 @@ class Object3D {
     const gl = global.gl;
 
     this.prepareNormalAttributes();
+    // Sync define for instancing
+    this.defines.instanced = this.instanced;
     const pipeline = withDefaultObject3DProcessors();
     const processed = pipeline.run(
       { vertex: vertexShaderSource, fragment: fragmentShaderSource },
@@ -76,6 +86,10 @@ class Object3D {
     this.prepareWireframeIndices(gl);
     if (!this.wireframe && this.indices) {
       createIndexBuffer(gl, this.indices!);
+    }
+
+    if (this.instanced && this.instanceMatrices) {
+      this.instanceBuffer = createInstancedMat4Attribute(gl, this.program, "aInstanceMatrix", this.instanceMatrices);
     }
     gl.bindVertexArray(null);
     this.vao = vao;
@@ -125,20 +139,42 @@ class Object3D {
     gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
     gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.composeModelMatrix());
   }
+  public updateInstanceMatrices(mats: Float32Array, count?: number) {
+    if (!this.instanced || !this.instanceBuffer) return;
+    const gl = global.gl;
+    this.instanceMatrices = mats;
+    if (typeof count === "number") this.instanceCount = count;
+    gl.bindVertexArray(this.vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, mats, gl.DYNAMIC_DRAW);
+    gl.bindVertexArray(null);
+  }
   public renderObject() {
     const gl = global.gl;
     gl.useProgram(this.program);
     this.uploadUniformMatrices(gl);
     gl.bindVertexArray(this.vao);
-    if (this.wireframe) {
-      gl.drawElements(gl.LINES, this.lineIndics!.length, gl.UNSIGNED_SHORT, 0);
-    } else if (this.indices) {
-      gl.drawElements(gl.TRIANGLES, this.indices!.length, gl.UNSIGNED_SHORT, 0);
+    if (this.instanced) {
+      const count = this.instanceCount;
+      if (this.wireframe && this.lineIndics) {
+        gl.drawElementsInstanced(gl.LINES, this.lineIndics.length, gl.UNSIGNED_SHORT, 0, count);
+      } else if (this.indices) {
+        gl.drawElementsInstanced(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0, count);
+      } else {
+        gl.drawArraysInstanced(gl.TRIANGLES, 0, this.vertices.length / 3, count);
+      }
     } else {
-      gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3);
+      if (this.wireframe && this.lineIndics) {
+        gl.drawElements(gl.LINES, this.lineIndics.length, gl.UNSIGNED_SHORT, 0);
+      } else if (this.indices) {
+        gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
+      } else {
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3);
+      }
     }
     gl.bindVertexArray(null);
   }
 }
 
 export default Object3D;
+

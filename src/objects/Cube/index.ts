@@ -7,12 +7,14 @@ interface CubeParams {
   height: number;
   depth: number;
   wireframe?: boolean;
+  instanceMatrices?: Float32Array;
+  instanceCount?: number;
 }
 
 class Cube extends Object3D {
   constructor(params: CubeParams) {
     super();
-    const { width, height, depth, wireframe = false } = params;
+    const { width, height, depth, wireframe = false, instanceMatrices, instanceCount } = params;
     this.wireframe = wireframe;
     this.type = "cube";
     this.normalMode = "flat";
@@ -45,6 +47,12 @@ class Cube extends Object3D {
       w, -h, -d, // 右下 后面 
     ]);
     
+    if (instanceMatrices && instanceCount && instanceCount > 0) {
+      this.instanced = true;
+      this.instanceMatrices = instanceMatrices;
+      this.instanceCount = instanceCount;
+    }
+
     this.initializeObject(vertexShaderSource, fragmentShaderSource);
   }
 }

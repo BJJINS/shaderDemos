@@ -47,6 +47,29 @@ export const createProgramAttribute = (
   gl.vertexAttribPointer(attributeLocation, size, type, false, 0, 0);
 };
 
+// Bind a mat4 as an instanced attribute (occupies 4 consecutive attribute locations)
+export const createInstancedMat4Attribute = (
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  name: string,
+  data: Float32Array
+) => {
+  const baseLocation = gl.getAttribLocation(program, name);
+  if (baseLocation === -1) return;
+  const buffer = gl.createBuffer()!;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+  const bytesPerMatrix = 16 * 4; // 16 floats per mat4
+  const stride = bytesPerMatrix;
+  for (let i = 0; i < 4; i++) {
+    const loc = baseLocation + i;
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 4, gl.FLOAT, false, stride, i * 16);
+    gl.vertexAttribDivisor(loc, 1);
+  }
+  return buffer;
+};
+
 export const degreesToRadians = (degrees: number) => {
   return (degrees / 180) * Math.PI;
 };

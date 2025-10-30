@@ -13,4 +13,14 @@ uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uModelMatrix;
 
+#ifdef INSTANCED
+in mat4 aInstanceMatrix;
+#endif
+
+#ifdef INSTANCED
+#define MODEL_MATRIX (aInstanceMatrix * uModelMatrix)
+#else
+#define MODEL_MATRIX (uModelMatrix)
+#endif
+
 vec4 ambient, diffuse ,specular;
