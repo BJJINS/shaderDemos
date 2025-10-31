@@ -5,7 +5,7 @@ class Material {
   ambient = new Vec4(1.0, 0.0, 1.0, 1.0);
   diffuse = new Vec4(1.0, 0.8, 0, 1.0);
   specular = new Vec4(1.0, 0.8, 1.0, 1.0);
-  shininess = 100;
+  shininess = 50;
   type: string;
   constructor(type: string) {
     this.type = type;

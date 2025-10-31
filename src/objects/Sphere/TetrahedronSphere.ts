@@ -32,7 +32,7 @@ class TetrahedronSphere extends Object3D {
     this.type = "sphere";
     this.radius = radius;
     this.scale.scale(radius); // 将单位球放大到指定半径
-    this.subdivisions = Math.min(subdivisions, 10); // 最多细分10次
+    this.subdivisions = Math.min(subdivisions, 9); 
     this.subdivide();
 
     this.vertices = new Float32Array(
