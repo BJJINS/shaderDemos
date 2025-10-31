@@ -41,7 +41,10 @@ class TetrahedronSphere extends Object3D {
         return res;
       }, [] as number[])
     );
-    this.indices = new Uint16Array(this.initialIndices);
+    const needUint32 = this.initialVertices.length > 65535;
+    this.indices = needUint32
+      ? new Uint32Array(this.initialIndices)
+      : new Uint16Array(this.initialIndices);
 
     if (instanceMatrices && instanceCount && instanceCount > 0) {
       this.instanced = true;

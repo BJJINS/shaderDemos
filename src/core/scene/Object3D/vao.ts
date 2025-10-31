@@ -11,7 +11,7 @@ export function createObjectVAO(
   params: {
     vertices: Float32Array;
     normals?: Float32Array;
-    indices?: Uint16Array;
+    indices?: Uint16Array | Uint32Array;
     wireframe: boolean;
     instanced: boolean;
     instanceMatrices?: Float32Array;
@@ -25,7 +25,7 @@ export function createObjectVAO(
     createProgramAttribute(gl, program, 3, params.normals, "aNormal", gl.FLOAT);
   }
 
-  let lineIndics: Uint16Array | undefined;
+  let lineIndics: Uint16Array | Uint32Array | undefined;
   if (params.wireframe && params.indices) {
     lineIndics = buildWireframeIndices(params.indices);
     if (lineIndics) createIndexBuffer(gl, lineIndics);

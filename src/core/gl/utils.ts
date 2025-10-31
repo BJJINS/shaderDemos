@@ -73,14 +73,17 @@ export const degreesToRadians = (degrees: number) => {
   return (degrees / 180) * Math.PI;
 };
 
-export const createIndexBuffer = (gl: WebGL2RenderingContext, indices: Uint16Array) => {
+export const createIndexBuffer = (
+  gl: WebGL2RenderingContext,
+  indices: Uint16Array | Uint32Array
+) => {
   const buffer = gl.createBuffer()!;
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
   return buffer;
 };
 
-export const generateFlatNormals = (originIndices: Uint16Array, originVertices: Float32Array) => {
+export const generateFlatNormals = (originIndices: ArrayLike<number>, originVertices: Float32Array) => {
   const normals: number[] = [];
   const vertices: number[] = [];
   for (let i = 0; i < originIndices.length; i += 3) {

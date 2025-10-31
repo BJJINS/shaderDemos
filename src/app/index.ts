@@ -49,7 +49,7 @@ const cube = new Cube({
 
 const sphere = new TetrahedronSphere({
   radius: 2,
-  subdivisions: 9,
+  subdivisions: 8,
   
 });
 

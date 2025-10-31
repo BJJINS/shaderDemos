@@ -40,10 +40,10 @@ class Object3D {
 
   vertices!: Float32Array; // 顶点
   normals?: Float32Array; // 法线
-  indices?: Uint16Array; // 索引
+  indices?: Uint16Array | Uint32Array; // 索引
   vao!: WebGLVertexArrayObject;
 
-  lineIndics?: Uint16Array; // 线框模式索引
+  lineIndics?: Uint16Array | Uint32Array; // 线框模式索引
   wireframe = false; // 是否线框模式
   type!: string;
 
@@ -188,17 +188,21 @@ class Object3D {
     if (this.instanced) {
       const count = this.instanceCount;
       if (this.wireframe && this.lineIndics) {
-        gl.drawElementsInstanced(gl.LINES, this.lineIndics.length, gl.UNSIGNED_SHORT, 0, count);
+        const indexType = this.lineIndics instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+        gl.drawElementsInstanced(gl.LINES, this.lineIndics.length, indexType, 0, count);
       } else if (this.indices) {
-        gl.drawElementsInstanced(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0, count);
+        const indexType = this.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+        gl.drawElementsInstanced(gl.TRIANGLES, this.indices.length, indexType, 0, count);
       } else {
         gl.drawArraysInstanced(gl.TRIANGLES, 0, this.vertices.length / 3, count);
       }
     } else {
       if (this.wireframe && this.lineIndics) {
-        gl.drawElements(gl.LINES, this.lineIndics.length, gl.UNSIGNED_SHORT, 0);
+        const indexType = this.lineIndics instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+        gl.drawElements(gl.LINES, this.lineIndics.length, indexType, 0);
       } else if (this.indices) {
-        gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
+        const indexType = this.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+        gl.drawElements(gl.TRIANGLES, this.indices.length, indexType, 0);
       } else {
         gl.drawArrays(gl.TRIANGLES, 0, this.vertices.length / 3);
       }
