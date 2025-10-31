@@ -90,6 +90,8 @@ class World {
     const gl = global.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.children.forEach((child: Object3D) => child.renderObject(this.isInitializedObjects));
+    global.camera.viewMatrixDirty = false;
+    global.camera.projectionMatrixDirty = false;
   }
 }
 

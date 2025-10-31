@@ -139,11 +139,9 @@ class Object3D {
     const camera = global.camera;
     if (camera.viewMatrixDirty) {
       gl.uniformMatrix4fv(this.uniforms.viewMatrix, true, camera.viewMatrix);
-      camera.viewMatrixDirty = false;
     }
     if (camera.projectionMatrixDirty) {
       gl.uniformMatrix4fv(this.uniforms.projectionMatrix, true, camera.projectionMatrix);
-      camera.projectionMatrixDirty = false;
     }
     gl.uniformMatrix4fv(this.uniforms.modelMatrix, true, this.composeModelMatrix());
   }

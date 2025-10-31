@@ -39,29 +39,31 @@ for (let y = 0; y < grid; y++) {
 }
 
 const cube = new Cube({
-  width: 0.8,
-  height: 0.8,
-  depth: 0.8,
+  width: 1,
+  height: 1,
+  depth: 1,
   // instanceMatrices,
   // instanceCount: count,
   // wireframe: true,
 });
 
+cube.position.x = 3;
+
 const sphere = new TetrahedronSphere({
-  radius: 2,
+  radius: 1,
   subdivisions: 8,
   
 });
 
-// world.addObjects(cube);
+world.addObjects(cube);
 world.addObjects(sphere);
 
 let angle = 0;
 
 const render = () => {
   angle += 0.5;
-  sphere.rotation.x = angle;
-  sphere.rotation.y = angle;
+  cube.rotation.x = angle;
+  cube.rotation.y = angle;
   world.render();
   requestAnimationFrame(render);
 };
