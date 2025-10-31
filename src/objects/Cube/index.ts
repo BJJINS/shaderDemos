@@ -15,7 +15,6 @@ class Cube extends Object3D {
     const { width, height, depth, wireframe = false, instanceMatrices, instanceCount } = params;
     this.wireframe = wireframe;
     this.type = "cube";
-    this.normalMode = "flat";
     const w = width / 2;
     const h = height / 2;
     const d = depth / 2;

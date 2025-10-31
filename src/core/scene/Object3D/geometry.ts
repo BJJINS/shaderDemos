@@ -1,16 +1,15 @@
-import { generateFlatNormals, generateSmoothNormals } from "@core/gl/utils";
+import { generateFlatNormals } from "@core/gl/utils";
 
 export function prepareNormalAttributes(params: {
   vertices: Float32Array;
   indices?: Uint16Array;
   wireframe: boolean;
-  normalMode: "smooth" | "flat";
 }): {
   vertices: Float32Array;
   normals?: Float32Array;
   indices?: Uint16Array;
 } {
-  const { vertices, indices, wireframe, normalMode } = params;
+  const { vertices, indices, wireframe } = params;
   if (wireframe) {
     return {
       vertices,
@@ -18,13 +17,8 @@ export function prepareNormalAttributes(params: {
       indices,
     };
   }
-  if (normalMode === "flat") {
-    const { vertices: vOut, normals } = generateFlatNormals(indices!, vertices);
+ const { vertices: vOut, normals } = generateFlatNormals(indices!, vertices);
     return { vertices: vOut, normals, indices: undefined };
-  } else {
-    const normals = generateSmoothNormals(indices!, vertices!);
-    return { vertices, normals, indices };
-  }
 }
 
 export function buildWireframeIndices(indices?: Uint16Array): Uint16Array | undefined {

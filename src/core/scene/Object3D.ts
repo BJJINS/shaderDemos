@@ -45,7 +45,6 @@ class Object3D {
 
   lineIndics?: Uint16Array; // 线框模式索引
   wireframe = false; // 是否线框模式
-  normalMode: "smooth" | "flat" = "smooth";
   type!: string;
 
   defines = {
@@ -71,7 +70,6 @@ class Object3D {
       vertices: this.vertices,
       indices: this.indices,
       wireframe: this.wireframe,
-      normalMode: this.normalMode,
     });
     this.vertices = prepared.vertices;
     this.normals = prepared.normals;
