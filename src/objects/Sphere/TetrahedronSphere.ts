@@ -1,6 +1,4 @@
 import Object3D from "@core/scene/Object3D";
-import vertexShaderSource from "./vertex.glsl";
-import fragmentShaderSource from "./fragment.glsl";
 import { Vec3 } from "@core/math/Vector";
 
 interface TetrahedronSphereParams {
@@ -50,8 +48,6 @@ class TetrahedronSphere extends Object3D {
       this.instanceMatrices = instanceMatrices;
       this.instanceCount = instanceCount;
     }
-
-    this.initializeObject(vertexShaderSource, fragmentShaderSource);
   }
   // 获取中点索引
   private getMidpointIndex(i1: number, i2: number) {

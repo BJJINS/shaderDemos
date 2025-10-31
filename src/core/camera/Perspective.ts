@@ -26,6 +26,7 @@ class PerspectiveCamera extends Camera {
       0, 0, -(far + near) / d, -2 * far * near / d,
       0, 0, -1, 0
     ]).uniformMatrix;
+    this.projectionMatrixDirty = true;
     global.camera = this;
   }
 }

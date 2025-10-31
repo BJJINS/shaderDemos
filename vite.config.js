@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@core': fileURLToPath(new URL('./src/core', import.meta.url)),
       '@objects': fileURLToPath(new URL('./src/objects', import.meta.url)),
+      '@shaders': fileURLToPath(new URL('./src/shaders', import.meta.url)),
     },
   },
 });

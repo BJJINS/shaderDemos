@@ -3,9 +3,17 @@ import Quaternion from "@core/math/Quaternion";
 import Transformation from "@core/math/Transform";
 import { Vec3 } from "@core/math/Vector";
 import { NormalMaterial } from "./../../Material/Material";
-import { buildProgramWithPipeline, getUniformLocations } from "@core/scene/Object3D/shader";
+import {
+  buildProgramWithPipeline,
+  buildWireframeProgramWithPipeline,
+} from "@core/scene/Object3D/shader";
 import { prepareNormalAttributes } from "@core/scene/Object3D/geometry";
 import { createObjectVAO, updateInstanceBuffer } from "@core/scene/Object3D/vao";
+import vertexShaderSource from "@shaders/vertex.glsl";
+import fragmentShaderSource from "@shaders/fragment.glsl";
+import wireframeVertexShaderSource from "@shaders/wireframe/vertex.glsl";
+import wireframeFragmentShaderSource from "@shaders/wireframe/fragment.glsl";
+import type BlinnPhongLight from "./Light";
 
 class Object3D {
   position = new Vec3();
@@ -14,9 +22,21 @@ class Object3D {
   children: Object3D[] = [];
   quaternion = new Quaternion();
   program!: WebGLProgram;
+
   viewMatrixUniformLoc!: WebGLUniformLocation;
   projectionMatrixUniformLoc!: WebGLUniformLocation;
   modelMatrixUniformLoc!: WebGLUniformLocation;
+
+  uniforms: Record<string, WebGLUniformLocation> = {
+    viewMatrix: null!,
+    projectionMatrix: null!,
+    modelMatrix: null!,
+    lightPosition: null!,
+    shininess: null!,
+    ambientProduct: null!,
+    diffuseProduct: null!,
+    specularProduct: null!,
+  };
 
   vertices!: Float32Array; // 顶点
   normals?: Float32Array; // 法线
@@ -29,8 +49,6 @@ class Object3D {
   type!: string;
 
   defines = {
-    normal: false,
-    light: false,
     instanced: false,
   };
 
@@ -46,7 +64,7 @@ class Object3D {
   public addChild(child: Object3D) {
     this.children.push(child);
   }
-  public initializeObject(vertexShaderSource: string, fragmentShaderSource: string) {
+  public initializeObject(light: BlinnPhongLight) {
     const gl = global.gl;
 
     const prepared = prepareNormalAttributes({
@@ -59,21 +77,34 @@ class Object3D {
     this.normals = prepared.normals;
     this.indices = prepared.indices;
 
-    // Sync define for instancing
     this.defines.instanced = this.instanced;
 
-    this.program = buildProgramWithPipeline(gl, {
-      vertex: vertexShaderSource,
-      fragment: fragmentShaderSource,
-      defines: this.defines,
-      normals: this.normals,
-      material: this.material,
-    });
+    if (this.wireframe) {
+      this.program = buildWireframeProgramWithPipeline(gl, {
+        vertex: wireframeVertexShaderSource,
+        fragment: wireframeFragmentShaderSource,
+        defines: this.defines,
+      });
+    } else {
+      this.program = buildProgramWithPipeline(gl, {
+        vertex: vertexShaderSource,
+        fragment: fragmentShaderSource,
+        defines: this.defines,
+      });
+    }
 
-    const { viewMatrixUniformLoc, projectionMatrixUniformLoc, modelMatrixUniformLoc } = getUniformLocations(gl, this.program);
-    this.viewMatrixUniformLoc = viewMatrixUniformLoc;
-    this.projectionMatrixUniformLoc = projectionMatrixUniformLoc;
-    this.modelMatrixUniformLoc = modelMatrixUniformLoc;
+
+
+    this.uniforms.viewMatrix = gl.getUniformLocation(this.program, "uViewMatrix")!;
+    this.uniforms.projectionMatrix = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
+    this.uniforms.modelMatrix = gl.getUniformLocation(this.program, "uModelMatrix")!;
+    this.uniforms.lightPosition = gl.getUniformLocation(this.program, "uLightPosition")!;
+    this.uniforms.shininess = gl.getUniformLocation(this.program, "uShininess")!;
+    this.uniforms.ambientProduct = gl.getUniformLocation(this.program, "uAmbientProduct")!;
+    this.uniforms.diffuseProduct = gl.getUniformLocation(this.program, "uDiffuseProduct")!;
+    this.uniforms.specularProduct = gl.getUniformLocation(this.program, "uSpecularProduct")!;
+
+
 
     const { vao, lineIndics, instanceBuffer } = createObjectVAO(gl, this.program, {
       vertices: this.vertices,
@@ -95,16 +126,26 @@ class Object3D {
   }
   private composeModelMatrix() {
     const rotationMatrix = this.computeRotationMatrix();
-    const translateMatrix = Transformation.translate(this.position.x, this.position.y, this.position.z);
+    const translateMatrix = Transformation.translate(
+      this.position.x,
+      this.position.y,
+      this.position.z
+    );
     const scaleMatrix = Transformation.scale(this.scale.x, this.scale.y, this.scale.z);
     return translateMatrix.mult(scaleMatrix.mult(this.quaternion.toMatrix().mult(rotationMatrix)))
       .uniformMatrix;
   }
   private uploadUniformMatrices(gl: WebGL2RenderingContext) {
     const camera = global.camera;
-    gl.uniformMatrix4fv(this.viewMatrixUniformLoc, true, camera.viewMatrix);
-    gl.uniformMatrix4fv(this.projectionMatrixUniformLoc, true, camera.projectionMatrix);
-    gl.uniformMatrix4fv(this.modelMatrixUniformLoc, true, this.composeModelMatrix());
+    if (camera.viewMatrixDirty) {
+      gl.uniformMatrix4fv(this.uniforms.viewMatrix, true, camera.viewMatrix);
+      camera.viewMatrixDirty = false;
+    }
+    if (camera.projectionMatrixDirty) {
+      gl.uniformMatrix4fv(this.uniforms.projectionMatrix, true, camera.projectionMatrix);
+      camera.projectionMatrixDirty = false;
+    }
+    gl.uniformMatrix4fv(this.uniforms.modelMatrix, true, this.composeModelMatrix());
   }
   public updateInstanceMatrices(mats: Float32Array, count?: number) {
     if (!this.instanced || !this.instanceBuffer) return;
@@ -141,4 +182,3 @@ class Object3D {
 }
 
 export default Object3D;
-

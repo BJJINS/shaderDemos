@@ -5,18 +5,17 @@ type CameraType = "orthographic" | "perspective";
 
 abstract class Camera {
   position = new Vec3();
-  // 相机类型：正交或透视
   type: CameraType;
   viewMatrix = new Mat4().uniformMatrix;
-  // 投影矩阵：由具体相机实现覆盖
   projectionMatrix = new Mat4().uniformMatrix; 
+  viewMatrixDirty = false;
+  projectionMatrixDirty = false;
   constructor(type: CameraType) {
     this.type = type;
   }
   lookAt(target: Vec3) {
     const view = target.sub(this.position).normalize();
     let up = new Vec3(0, 1, 0);
-    // 构建正交基并归一化，防止缩放误差
     const right = view.cross(up).normalize();
     up = right.cross(view).normalize();
     view.negate();
@@ -31,6 +30,7 @@ abstract class Camera {
       0, 0, 0, 1,
     ]);
     this.viewMatrix = viewMatrix.uniformMatrix;
+    this.viewMatrixDirty = true;
   }
   abstract updateProjectionMatrix(): void;
 }

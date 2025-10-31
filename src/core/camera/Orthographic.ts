@@ -39,6 +39,7 @@ class OrthographicCamera extends Camera {
 
     // 先平移后缩放
     this.projectionMatrix = scaleMat4.mult(translateMat4).uniformMatrix;
+    this.projectionMatrixDirty = true;
     global.camera = this;
   }
 }

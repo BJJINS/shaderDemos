@@ -4,7 +4,7 @@ type LightType = "directional" | "point" | "spot";
 
 class BlinnPhongLight {
   position = new Vec3(1, 1, 1);
-  intensity = 1;
+  shininess = 100;
 
   la = new Vec4(1, 1, 1, 1); // 环境光颜色
   ld = new Vec4(1, 1, 1, 1); // 漫反射颜色

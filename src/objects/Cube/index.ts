@@ -1,6 +1,4 @@
 import Object3D from "@core/scene/Object3D";
-import fragmentShaderSource from "./fragment.glsl";
-import vertexShaderSource from "./vertex.glsl";
 
 interface CubeParams {
   width: number;
@@ -52,8 +50,6 @@ class Cube extends Object3D {
       this.instanceMatrices = instanceMatrices;
       this.instanceCount = instanceCount;
     }
-
-    this.initializeObject(vertexShaderSource, fragmentShaderSource);
   }
 }
 

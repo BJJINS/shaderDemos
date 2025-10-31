@@ -8,26 +8,25 @@ import BlinnPhongLight from "@core/scene/Light";
 interface WorldParams {
   clearColor?: Vec4;
   depthTest?: boolean;
+  light: BlinnPhongLight;
 }
 
 class World {
   private children: Object3D[] = [];
   private canvas: HTMLCanvasElement;
   private pixelRatio: number;
-  private lights: BlinnPhongLight[] = [];
-  constructor(params?: WorldParams) {
-    const { clearColor = new Vec4(1, 1, 1, 1) } = params || {};
+  private light: BlinnPhongLight;
+  private isInitializedObjects = false;
+  constructor(params: WorldParams) {
+    const { clearColor = new Vec4(1, 1, 1, 1), light } = params;
     this.pixelRatio = Math.min(window.devicePixelRatio, 2);
     this.canvas = this.createCanvas();
     this.initWebgl2(clearColor);
     this.resize();
+    this.light = light;
   }
   addObjects(...rest: Object3D[]) {
     this.children.push(...rest);
-  }
-
-  addLights(...rest: BlinnPhongLight[]) {
-    this.lights.push(...rest);
   }
 
   private initWebgl2(clearColor: Vec4) {
@@ -85,6 +84,10 @@ class World {
     });
   }
   public render() {
+    if (!this.isInitializedObjects) {
+      this.children.forEach((child: Object3D) => child.initializeObject(this.light));
+      this.isInitializedObjects = true;
+    }
     const gl = global.gl;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     this.children.forEach((child: Object3D) => child.renderObject());

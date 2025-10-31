@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "@core/*": ["src/core/*"],
-      "@objects/*": ["src/objects/*"]
+      "@objects/*": ["src/objects/*"],
+      "@shaders/*": ["src/shaders/*"]
     },
 
     /* Linting */

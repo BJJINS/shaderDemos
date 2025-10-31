@@ -5,6 +5,7 @@ import PointLight from "@core/scene/Light/PointLight";
 import Cube from "@objects/Cube";
 
 const world = new World({
+  light: new PointLight(),
 });
 const aspect = window.innerWidth / window.innerHeight;
 const near = 1;
@@ -17,15 +18,15 @@ camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
-const grid = 4;
+const grid = 5;
 const spacing = 1.5;
 const count = grid * grid;
 const instanceMatrices = new Float32Array(count * 16);
 let idx = 0;
 for (let y = 0; y < grid; y++) {
   for (let x = 0; x < grid; x++) {
-    const tx = (x - (grid - 1) / 2) * spacing;
-    const ty = (y - (grid - 1) / 2) * spacing;
+    const tx = (x - (grid-1) / 2) * spacing;
+    const ty = (y - (grid-1) / 2) * spacing;
     const tz = 0;
     const base = idx * 16;
     instanceMatrices[base + 0] = 1;  instanceMatrices[base + 1] = 0;  instanceMatrices[base + 2] = 0;  instanceMatrices[base + 3] = 0;
@@ -42,10 +43,10 @@ const cube = new Cube({
   depth: 0.8,
   // instanceMatrices,
   // instanceCount: count,
+  wireframe: true,
 });
 
 world.addObjects(cube);
-world.addLights(new PointLight());
 
 let angle = 0;
 const zAxis = new Vec3(1, 1, 0);

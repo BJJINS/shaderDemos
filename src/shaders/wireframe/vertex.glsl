@@ -1,13 +1,8 @@
 #version 300 es
 
-{{ defines }}
+{ { defines } }
 
 in vec3 aPosition;
-
-#ifdef NORMAL
-in vec3 aNormal;
-out vec3 vNormal;
-#endif
 
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
@@ -23,4 +18,6 @@ in mat4 aInstanceMatrix;
 #define MODEL_MATRIX (uModelMatrix)
 #endif
 
-// vec4 ambient, diffuse ,specular;
+void main() {
+    gl_Position = uProjectionMatrix * uViewMatrix * MODEL_MATRIX * vec4(aPosition, 1.0);
+}

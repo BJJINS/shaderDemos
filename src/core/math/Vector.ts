@@ -90,6 +90,9 @@ class Vec3 extends Vec {
   clone() {
     return new Vec3(this.x, this.y, this.z);
   }
+  toArray() {
+    return [this.x, this.y, this.z];
+  }
 }
 
 class Vec4 extends Vec {
@@ -100,6 +103,9 @@ class Vec4 extends Vec {
   }
   clone() {
     return new Vec4(this.x, this.y, this.z, this.w);
+  }
+  toArray() {
+    return [this.x, this.y, this.z, this.w];
   }
 }
 

@@ -5,8 +5,6 @@ export type ShaderIO = {
 
 export type ShaderContext = {
   defines: Record<string, boolean>;
-  normals?: Float32Array;
-  material: { color: { x: number; y: number; z: number; w: number } };
 };
 
 export type ShaderProcessor = (io: ShaderIO, ctx: ShaderContext) => ShaderIO;
@@ -25,7 +23,6 @@ export class ShaderPipeline {
 }
 
 const applyShaderDefines: ShaderProcessor = (io, ctx) => {
-  ctx.defines.normal = !!ctx.normals;
 
   const keys = Object.keys(ctx.defines);
   let str = "";
@@ -37,19 +34,11 @@ const applyShaderDefines: ShaderProcessor = (io, ctx) => {
   }
   return {
     ...io,
-    vertex: io.vertex.replace("{{ defines }}", str),
-  };
-};
-
-const applyMaterialColor: ShaderProcessor = (io, ctx) => {
-  const { x, y, z, w } = ctx.material.color;
-  return {
-    ...io,
-    fragment: io.fragment.replace("{{ color }}", `vec4 color = vec4(${x}, ${y}, ${z}, ${w})`),
+    vertex: io.vertex.replace("{ { defines } }", str),
   };
 };
 
 export const withDefaultObject3DProcessors = () => {
   const pipeline = new ShaderPipeline();
-  return pipeline.use(applyShaderDefines).use(applyMaterialColor);
+  return pipeline.use(applyShaderDefines);
 };
