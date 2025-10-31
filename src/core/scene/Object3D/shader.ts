@@ -12,7 +12,6 @@ export function buildProgramWithPipeline(
   const { vertex, fragment, defines } = params;
   const pipeline = withDefaultObject3DProcessors();
   const processed = pipeline.run({ vertex, fragment }, { defines });
-
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, processed.vertex)!;
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, processed.fragment)!;
   return createProgram(gl, vertexShader, fragmentShader)!;

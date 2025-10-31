@@ -117,31 +117,38 @@ export const generateFlatNormals = (originIndices: Uint16Array, originVertices: 
 
 
 export const generateSmoothNormals = (originIndices: Uint16Array, originVertices: Float32Array) => {
-      const normals = new Float32Array(originVertices.length);
-    for (let i = 0; i < originIndices.length; i += 3) {
-      const i3 = i * 3;
-      const ia = originIndices[i3]; 
-      const ib = originIndices[i3 + 1];
-      const ic = originIndices[i3 + 2];
-      const a = new Vec3(originVertices[ia], originVertices[ia + 1], originVertices[ia + 2]);
-      const b = new Vec3(originVertices[ib], originVertices[ib + 1], originVertices[ib + 2]);
-      const c = new Vec3(originVertices[ic], originVertices[ic + 1], originVertices[ic + 2]);
+  const normals = new Float32Array(originVertices.length);
+  for (let i = 0; i < originIndices.length; i += 3) {
+    const ia = originIndices[i];
+    const ib = originIndices[i + 1];
+    const ic = originIndices[i + 2];
 
-      const ba = b.clone().sub(a);
-      const ca = c.clone().sub(a);
-      const normal = ba.cross(ca).normalize();
+    const ax = originVertices[ia * 3];
+    const ay = originVertices[ia * 3 + 1];
+    const az = originVertices[ia * 3 + 2];
+    const bx = originVertices[ib * 3];
+    const by = originVertices[ib * 3 + 1];
+    const bz = originVertices[ib * 3 + 2];
+    const cx = originVertices[ic * 3];
+    const cy = originVertices[ic * 3 + 1];
+    const cz = originVertices[ic * 3 + 2];
 
-      normals[ia] = normal.x;
-      normals[ia + 1] = normal.y;
-      normals[ia + 2] = normal.z;
+    const bax = bx - ax, bay = by - ay, baz = bz - az;
+    const cax = cx - ax, cay = cy - ay, caz = cz - az;
+    const nx = bay * caz - baz * cay;
+    const ny = baz * cax - bax * caz;
+    const nz = bax * cay - bay * cax;
 
-      normals[ib] = normal.x;
-      normals[ib + 1] = normal.y;
-      normals[ib + 2] = normal.z;
-
-      normals[ic] = normal.x;
-      normals[ic + 1] = normal.y;
-      normals[ic + 2] = normal.z;
-    }
-    return normals;
+    normals[ia * 3] += nx;      normals[ia * 3 + 1] += ny;      normals[ia * 3 + 2] += nz;
+    normals[ib * 3] += nx;      normals[ib * 3 + 1] += ny;      normals[ib * 3 + 2] += nz;
+    normals[ic * 3] += nx;      normals[ic * 3 + 1] += ny;      normals[ic * 3 + 2] += nz;
+  }
+  for (let i = 0; i < normals.length; i += 3) {
+    const nx = normals[i], ny = normals[i + 1], nz = normals[i + 2];
+    const len = Math.hypot(nx, ny, nz) || 1.0;
+    normals[i] = nx / len;
+    normals[i + 1] = ny / len;
+    normals[i + 2] = nz / len;
+  }
+  return normals;
 }

@@ -1,16 +1,13 @@
 #version 300 es
 precision mediump float;
 
-{ { defines } }
-
 out vec4 fragColor;
+in vec3 vColor;
 
 #ifdef NORMAL
 in vec3 vNormal;
 #endif
 
-vec4 color =  { { color } };
-
 void main() {
-    fragColor = color; 
+    fragColor = vec4(vColor, 1.0);
 }

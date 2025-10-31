@@ -13,7 +13,6 @@ import vertexShaderSource from "@shaders/vertex.glsl";
 import fragmentShaderSource from "@shaders/fragment.glsl";
 import wireframeVertexShaderSource from "@shaders/wireframe/vertex.glsl";
 import wireframeFragmentShaderSource from "@shaders/wireframe/fragment.glsl";
-import type BlinnPhongLight from "./Light";
 
 class Object3D {
   position = new Vec3();
@@ -36,6 +35,7 @@ class Object3D {
     ambientProduct: null!,
     diffuseProduct: null!,
     specularProduct: null!,
+    cameraPosition: null!,
   };
 
   vertices!: Float32Array; // 顶点
@@ -64,7 +64,7 @@ class Object3D {
   public addChild(child: Object3D) {
     this.children.push(child);
   }
-  public initializeObject(light: BlinnPhongLight) {
+  public initializeObject() {
     const gl = global.gl;
 
     const prepared = prepareNormalAttributes({
@@ -103,6 +103,8 @@ class Object3D {
     this.uniforms.ambientProduct = gl.getUniformLocation(this.program, "uAmbientProduct")!;
     this.uniforms.diffuseProduct = gl.getUniformLocation(this.program, "uDiffuseProduct")!;
     this.uniforms.specularProduct = gl.getUniformLocation(this.program, "uSpecularProduct")!;
+    this.uniforms.cameraPosition = gl.getUniformLocation(this.program, "uCameraPosition")!;
+    
 
 
 
@@ -154,10 +156,36 @@ class Object3D {
     if (typeof count === "number") this.instanceCount = count;
     updateInstanceBuffer(gl, this.vao, this.instanceBuffer, mats);
   }
-  public renderObject() {
+  public updateLight() {
+    const gl = global.gl;
+    const camera = global.camera;
+    const light = global.light;
+    gl.uniform3fv(this.uniforms.lightPosition, [light.position.x, light.position.y, light.position.z]);
+    gl.uniform1f(this.uniforms.shininess, this.material.shininess);
+    gl.uniform3fv(this.uniforms.ambientProduct, [
+      light.la.x * this.material.ambient.x,
+      light.la.y * this.material.ambient.y,
+      light.la.z * this.material.ambient.z,
+    ]);
+    gl.uniform3fv(this.uniforms.diffuseProduct, [
+      light.ld.x * this.material.diffuse.x,
+      light.ld.y * this.material.diffuse.y,
+      light.ld.z * this.material.diffuse.z,
+    ]);
+    gl.uniform3fv(this.uniforms.specularProduct, [
+      light.ls.x * this.material.specular.x,
+      light.ls.y * this.material.specular.y,
+      light.ls.z * this.material.specular.z,
+    ]);
+    gl.uniform3fv(this.uniforms.cameraPosition, [camera.position.x, camera.position.y, camera.position.z]);
+  }
+  public renderObject(isInitializedObjects: boolean) {
     const gl = global.gl;
     gl.useProgram(this.program);
     this.uploadUniformMatrices(gl);
+    if (!isInitializedObjects) {
+      this.updateLight();
+    }
     gl.bindVertexArray(this.vao);
     if (this.instanced) {
       const count = this.instanceCount;

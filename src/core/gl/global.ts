@@ -1,9 +1,11 @@
 import type Camera from "@core/camera/Camera";
+import type BlinnPhongLight from "@core/scene/Light";
 
 class GlobalContext {
   private static instance: GlobalContext;
   private _gl: WebGL2RenderingContext | null = null;
   private _camera: Camera | null = null;
+  private _light: BlinnPhongLight | null = null;
 
   constructor() {}
 
@@ -34,6 +36,17 @@ class GlobalContext {
       throw new Error("camera not initialized");
     }
     return this._camera;
+  }
+
+  set light(light: BlinnPhongLight) {
+    this._light = light;
+  }
+
+  get light(): BlinnPhongLight {
+    if (!this._light) {
+      throw new Error("light not initialized");
+    }
+    return this._light;
   }
 }
 
