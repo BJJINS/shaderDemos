@@ -26,7 +26,7 @@ class TetrahedronSphere extends Object3D {
   private initialIndices = TetrahedronSphereIndices;
   private cache: Map<string, number> = new Map();
   constructor(param: TetrahedronSphereParams) {
-    const { radius = 1, subdivisions = 4, wireframe = false, instanceMatrices, instanceCount } = param;
+    const { radius = 1, subdivisions = 5, wireframe = false, instanceMatrices, instanceCount } = param;
     super();
     this.wireframe = wireframe;
     this.type = "sphere";
@@ -84,6 +84,11 @@ class TetrahedronSphere extends Object3D {
         newIndices.push(a, ab, ac, b, bc, ab, c, ac, bc, ab, bc, ac);
       }
       this.initialIndices = newIndices;
+    }
+  }
+  protected generateNormals(){
+    if (!this.wireframe) {
+      this.normals = this.vertices;
     }
   }
 }

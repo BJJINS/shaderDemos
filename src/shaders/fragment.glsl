@@ -2,12 +2,25 @@
 precision mediump float;
 
 out vec4 fragColor;
-in vec3 vColor;
 
-#ifdef NORMAL
 in vec3 vNormal;
-#endif
+in vec3 vWorldPos;
+
+uniform vec3 uLightPosition;
+uniform vec3 uCameraPosition;
+
+uniform float uShininess;
+uniform vec3 uAmbientProduct, uDiffuseProduct, uSpecularProduct;
 
 void main() {
-    fragColor = vec4(vColor, 1.0);
+    vec3 N = normalize(vNormal);
+    vec3 L = normalize(uLightPosition - vWorldPos);
+    vec3 V = normalize(uCameraPosition - vWorldPos);
+    vec3 H = normalize(L + V);
+    float Kd = max(dot(N, L), 0.0);
+    float Ks = pow(max(dot(N, H), 0.0), uShininess) * step(0.0, Kd) * step(0.0, dot(N, V));
+    vec3 specular = Ks * uSpecularProduct;
+    vec3 color = uAmbientProduct + Kd * uDiffuseProduct + specular;
+
+    fragColor = vec4(color, 1.0);
 }

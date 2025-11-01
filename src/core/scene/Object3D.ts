@@ -7,12 +7,12 @@ import {
   buildProgramWithPipeline,
   buildWireframeProgramWithPipeline,
 } from "@core/scene/Object3D/shader";
-import { prepareNormalAttributes } from "@core/scene/Object3D/geometry";
 import { createObjectVAO, updateInstanceBuffer } from "@core/scene/Object3D/vao";
 import vertexShaderSource from "@shaders/vertex.glsl";
 import fragmentShaderSource from "@shaders/fragment.glsl";
 import wireframeVertexShaderSource from "@shaders/wireframe/vertex.glsl";
 import wireframeFragmentShaderSource from "@shaders/wireframe/fragment.glsl";
+import { generateFlatNormals } from "@core/gl/utils";
 
 class Object3D {
   position = new Vec3();
@@ -66,15 +66,7 @@ class Object3D {
   public initializeObject() {
     const gl = global.gl;
 
-    const prepared = prepareNormalAttributes({
-      vertices: this.vertices,
-      indices: this.indices,
-      wireframe: this.wireframe,
-    });
-    this.vertices = prepared.vertices;
-    this.normals = prepared.normals;
-    this.indices = prepared.indices;
-
+    this.generateNormals();
     this.defines.instanced = this.instanced;
 
     if (this.wireframe) {
@@ -91,8 +83,6 @@ class Object3D {
       });
     }
 
-
-
     this.uniforms.viewMatrix = gl.getUniformLocation(this.program, "uViewMatrix")!;
     this.uniforms.projectionMatrix = gl.getUniformLocation(this.program, "uProjectionMatrix")!;
     this.uniforms.modelMatrix = gl.getUniformLocation(this.program, "uModelMatrix")!;
@@ -102,9 +92,6 @@ class Object3D {
     this.uniforms.diffuseProduct = gl.getUniformLocation(this.program, "uDiffuseProduct")!;
     this.uniforms.specularProduct = gl.getUniformLocation(this.program, "uSpecularProduct")!;
     this.uniforms.cameraPosition = gl.getUniformLocation(this.program, "uCameraPosition")!;
-    
-
-
 
     const { vao, lineIndics, instanceBuffer } = createObjectVAO(gl, this.program, {
       vertices: this.vertices,
@@ -117,6 +104,14 @@ class Object3D {
     this.vao = vao;
     this.lineIndics = lineIndics;
     this.instanceBuffer = instanceBuffer;
+  }
+  protected generateNormals() {
+    if (!this.wireframe) {
+      const { normals, vertices } = generateFlatNormals(this.indices!, this.vertices);
+      this.normals = normals;
+      this.vertices = vertices;
+      this.indices = undefined;
+    }
   }
   private computeRotationMatrix() {
     const xMat4 = Transformation.rotationX(this.rotation.x);
@@ -156,7 +151,11 @@ class Object3D {
     const gl = global.gl;
     const camera = global.camera;
     const light = global.light;
-    gl.uniform3fv(this.uniforms.lightPosition, [light.position.x, light.position.y, light.position.z]);
+    gl.uniform3fv(this.uniforms.lightPosition, [
+      light.position.x,
+      light.position.y,
+      light.position.z,
+    ]);
     gl.uniform1f(this.uniforms.shininess, this.material.shininess);
     gl.uniform3fv(this.uniforms.ambientProduct, [
       light.la.x * this.material.ambient.x,
@@ -173,7 +172,11 @@ class Object3D {
       light.ls.y * this.material.specular.y,
       light.ls.z * this.material.specular.z,
     ]);
-    gl.uniform3fv(this.uniforms.cameraPosition, [camera.position.x, camera.position.y, camera.position.z]);
+    gl.uniform3fv(this.uniforms.cameraPosition, [
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+    ]);
   }
   public renderObject(isInitializedObjects: boolean) {
     const gl = global.gl;
@@ -186,7 +189,8 @@ class Object3D {
     if (this.instanced) {
       const count = this.instanceCount;
       if (this.wireframe && this.lineIndics) {
-        const indexType = this.lineIndics instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+        const indexType =
+          this.lineIndics instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
         gl.drawElementsInstanced(gl.LINES, this.lineIndics.length, indexType, 0, count);
       } else if (this.indices) {
         const indexType = this.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
@@ -196,7 +200,8 @@ class Object3D {
       }
     } else {
       if (this.wireframe && this.lineIndics) {
-        const indexType = this.lineIndics instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+        const indexType =
+          this.lineIndics instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
         gl.drawElements(gl.LINES, this.lineIndics.length, indexType, 0);
       } else if (this.indices) {
         const indexType = this.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;

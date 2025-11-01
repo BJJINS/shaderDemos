@@ -51,8 +51,6 @@ cube.position.x = 3;
 
 const sphere = new TetrahedronSphere({
   radius: 1,
-  subdivisions: 8,
-  
 });
 
 world.addObjects(cube);
@@ -64,6 +62,9 @@ const render = () => {
   angle += 0.5;
   cube.rotation.x = angle;
   cube.rotation.y = angle;
+
+  sphere.rotation.x = angle;
+  sphere.rotation.y = angle;
   world.render();
   requestAnimationFrame(render);
 };
