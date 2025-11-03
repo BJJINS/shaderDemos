@@ -20,32 +20,10 @@ camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
 
-const grid = 5;
-const spacing = 1.5;
-const count = grid * grid;
-const instanceMatrices = new Float32Array(count * 16);
-let idx = 0;
-for (let y = 0; y < grid; y++) {
-  for (let x = 0; x < grid; x++) {
-    const tx = (x - (grid-1) / 2) * spacing;
-    const ty = (y - (grid-1) / 2) * spacing;
-    const tz = 0;
-    const base = idx * 16;
-    instanceMatrices[base + 0] = 1;  instanceMatrices[base + 1] = 0;  instanceMatrices[base + 2] = 0;  instanceMatrices[base + 3] = 0;
-    instanceMatrices[base + 4] = 0;  instanceMatrices[base + 5] = 1;  instanceMatrices[base + 6] = 0;  instanceMatrices[base + 7] = 0;
-    instanceMatrices[base + 8] = 0;  instanceMatrices[base + 9] = 0;  instanceMatrices[base +10] = 1;  instanceMatrices[base +11] = 0;
-    instanceMatrices[base +12] = tx; instanceMatrices[base +13] = ty; instanceMatrices[base +14] = tz; instanceMatrices[base +15] = 1;
-    idx++;
-  }
-}
-
 const cube = new Cube({
   width: 1,
   height: 1,
   depth: 1,
-  // instanceMatrices,
-  // instanceCount: count,
-  // wireframe: true,
 });
 
 cube.position.x = 3;
