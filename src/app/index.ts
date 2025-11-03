@@ -3,6 +3,7 @@ import World from "@core/gl/World";
 import { Vec3 } from "@core/math/Vector";
 import PointLight from "@core/scene/Light/PointLight";
 import Cube from "@objects/Cube";
+import Plane from "@objects/Plane";
 import TetrahedronSphere from "@objects/Sphere/TetrahedronSphere";
 
 const world = new World({
@@ -53,18 +54,23 @@ const sphere = new TetrahedronSphere({
   radius: 1,
 });
 
-world.addObjects(cube);
-world.addObjects(sphere);
+// world.addObjects(cube);
+// world.addObjects(sphere);
+
+const plane = new Plane({
+  width: 3,
+});
+world.addObjects(plane);
 
 let angle = 0;
 
 const render = () => {
   angle += 0.5;
-  cube.rotation.x = angle;
-  cube.rotation.y = angle;
+  // cube.rotation.x = angle;
+  // cube.rotation.y = angle;
 
-  sphere.rotation.x = angle;
-  sphere.rotation.y = angle;
+  // sphere.rotation.x = angle;
+  // sphere.rotation.y = angle;
   world.render();
   requestAnimationFrame(render);
 };
