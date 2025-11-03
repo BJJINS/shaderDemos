@@ -42,8 +42,8 @@ class Plane extends Object3D {
     }
 
     k = 0;
-    for (let iy = 0; iy <= heightSegments; iy++) {
-      for (let ix = 0; ix <= widthSegments; ix++) {
+    for (let iy = 0; iy < heightSegments; iy++) {
+      for (let ix = 0; ix < widthSegments; ix++) {
         const a = ix + iy * (widthSegments + 1);
         const b = a + 1;
         const c = a + widthSegments + 1;

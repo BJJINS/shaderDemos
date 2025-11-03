@@ -15,7 +15,7 @@ const far = 100;
 
 const camera = new PerspectiveCamera(45, aspect, near, far);
 camera.position.x = 0;
-camera.position.y = 0;
+camera.position.y = 10;
 camera.position.z = 10;
 
 camera.lookAt(new Vec3(0, 0, 0));
@@ -36,19 +36,20 @@ const sphere = new TetrahedronSphere({
 // world.addObjects(sphere);
 
 const plane = new Plane({
-  width: 3,
+  width: 5,
+  height: 5,
+  widthSegments: 3,
+  heightSegments: 3,
+  // wireframe: true,
 });
+plane.rotation.x = -90;
 world.addObjects(plane);
 
 let angle = 0;
-
+angle += 0.5;
+// cube.rotation.x = angle;
+// cube.rotation.y = angle;
 const render = () => {
-  angle += 0.5;
-  // cube.rotation.x = angle;
-  // cube.rotation.y = angle;
-
-  // sphere.rotation.x = angle;
-  // sphere.rotation.y = angle;
   world.render();
   requestAnimationFrame(render);
 };
