@@ -1,4 +1,4 @@
-import { Vec3, vec3 } from "./math/vec";
+import { vec3 } from "./math/vec";
 
 export const SRGBColorSpace = "SRGBColorSpace" as const;
 export const LinearSRGBColorSpace = "LinearSRGBColorSpace" as const;
@@ -28,9 +28,9 @@ const parseHex = (hex: string | number): [number, number, number] => {
   return [r, g, b];
 };
 
-export function color(hex: string | number, space?: ColorSpace): Vec3;
-export function color(r: number, g: number, b: number, space?: ColorSpace): Vec3;
-export function color(a: string | number, b?: number | ColorSpace, c?: number, d?: ColorSpace): Vec3 {
+function createColor(hex: string | number, space?: ColorSpace): Vec3;
+function createColor(r: number, g: number, b: number, space?: ColorSpace): Vec3;
+function createColor(a: string | number, b?: number | ColorSpace, c?: number, d?: ColorSpace): Vec3 {
   if (typeof a === "string" || (typeof a === "number" && (typeof b !== "number" || b === undefined))) {
     const space = (typeof b === "string" ? b : SRGBColorSpace) as ColorSpace;
     const [sr, sg, sb] = parseHex(a);
@@ -56,3 +56,5 @@ export function color(a: string | number, b?: number | ColorSpace, c?: number, d
   }
   return vec3(clamp01(r), clamp01(g), clamp01(bl));
 }
+
+export default createColor;

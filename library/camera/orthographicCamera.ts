@@ -1,6 +1,6 @@
 import { Mat, mat4x4 } from "../math/matrix";
 import { scaleM, translateM } from "../math/transform";
-import { Vec, vec3, type Vec3 } from "../math/vec";
+import { Vec, vec3 } from "../math/vec";
 
 interface OrthographicCamera {
   position?: Vec3;

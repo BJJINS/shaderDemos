@@ -1,10 +1,3 @@
-export interface Vec3 {
-  x: number;
-  y: number;
-  z: number;
-  type: "vec3";
-}
-
 export const vec3 = (x = 0, y = 0, z = 0): Vec3 => {
   return {
     x,
@@ -13,14 +6,6 @@ export const vec3 = (x = 0, y = 0, z = 0): Vec3 => {
     type: "vec3",
   };
 };
-
-export interface Vec4 {
-  x: number;
-  y: number;
-  z: number;
-  w: number;
-  type: "vec4";
-}
 
 export const vec4 = (x = 0, y = 0, z = 0, w = 1): Vec4 => {
   return {

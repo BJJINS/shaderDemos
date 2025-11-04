@@ -4,7 +4,7 @@ interface PlaneGeometryOptions {
   widthSegments?: number;
   heightSegments?: number;
 }
-const planeGeometry = (options?: PlaneGeometryOptions) => {
+const planeGeometry = (options?: PlaneGeometryOptions): Geometry => {
   const { width = 1, height = 1, widthSegments = 1, heightSegments = 1 } = options || {};
   const vertexCount = (widthSegments + 1) * (heightSegments + 1);
   const indicesCount = widthSegments * heightSegments * 6;
@@ -53,7 +53,7 @@ const planeGeometry = (options?: PlaneGeometryOptions) => {
     positions,
     normals,
     indices,
-  }
+  };
 };
 
 export default planeGeometry;

@@ -1,4 +1,4 @@
-import { Vec, vec3, type Vec3 } from "../math/vec";
+import { Vec, vec3 } from "../math/vec";
 interface PerspectiveCamera {
   position?: Vec3;
   target?: Vec3;
