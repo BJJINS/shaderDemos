@@ -32,8 +32,8 @@ const sphere = new TetrahedronSphere({
   radius: 1,
 });
 
-// world.addObjects(cube);
-// world.addObjects(sphere);
+world.addObjects(cube);
+world.addObjects(sphere);
 
 const plane = new Plane({
   width: 5,

@@ -30,7 +30,7 @@ class World {
 
   private initWebgl2(clearColor: Vec4) {
     const gl = this.canvas.getContext("webgl2", {
-      antialias: this.pixelRatio < 2,
+      antialias: true,
     })!;
     gl.enable(gl.DEPTH_TEST); // 开启深度测试
     gl.enable(gl.CULL_FACE); // 开启面剔除
