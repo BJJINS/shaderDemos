@@ -8,41 +8,64 @@ uniform vec3 u_camera;
 
 out vec4 fragColor;
 
-const vec3 lightColor = vec3(0.6118, 0.8353, 0.3373);
+const vec3 u_lightPos = vec3(10.0); // 默认灯光位置
+const vec3 u_lightColor = vec3(1.0); // 默认灯光颜色
+const vec3 u_baseColor = vec3(0.5); // 默认基础颜色
 
-vec3 reflectManual(vec3 incident, vec3 normal) {
-    vec3 parallel = dot(incident, normal) * normal; // 平行于法向量的分量
-    vec3 perpendicular = incident - parallel; // 垂直于法向量的分量（入射 - 平行）
-    vec3 reflected = perpendicular - parallel; // 垂直分量不变，平行分量反向
-    return reflected;
+// 优化后的环境光函数
+vec3 ambientLight(vec3 lightColor) {
+    return lightColor * 0.2; // 降低环境光强度，让卡通效果更明显
 }
 
-vec3 ambientLight() {
-    return lightColor * 0.3;
-}
-
-vec3 pointLight() {
-    vec3 position = vec3(5.0);
+// 优化后的点光源函数
+vec3 pointLight(vec3 lightPos, vec3 lightColor) {
     vec3 normal = normalize(v_normal.xyz);
-    vec3 lightDirection = normalize(position - v_position.xyz);
+    vec3 lightDirection = normalize(lightPos - v_position.xyz);
+
+    // 漫反射计算
     float diff = max(dot(normal, lightDirection), 0.0);
 
+    // 使用内置reflect函数，更高效
     vec3 viewDirection = normalize(u_camera - v_position.xyz);
-    vec3 lightReflection = reflectManual(-lightDirection, normal);
-    float spec = pow(max(dot(lightReflection, viewDirection), 0.0), 32.0);
+    vec3 lightReflection = reflect(-lightDirection, normal);
+    float spec = pow(max(dot(lightReflection, viewDirection), 0.0), 64.0); // 增加高光指数
 
-    // toon
-    diff *= diff > 0.7 ? 1.0 : diff > 0.3 ? 0.1 : 0.0;
-    spec *= spec > 0.7 ? 1.0 : spec > 0.3 ? 0.1 : 0.0;
+    // 改进的卡通渲染阈值
+    // 漫反射：3级卡通化
+    if (diff > 0.8) {
+        diff = 1.0;
+    } else if (diff > 0.4) {
+        diff = 0.6;
+    } else if (diff > 0.1) {
+        diff = 0.3;
+    } else {
+        diff = 0.0;
+    }
 
-    return lightColor * (diff + spec);
+    // 高光：2级卡通化
+    if (spec > 0.7) {
+        spec = 1.0;
+    } else if (spec > 0.3) {
+        spec = 0.5;
+    } else {
+        spec = 0.0;
+    }
+
+    return lightColor * (diff + spec * 0.8); // 降低高光强度
 }
 
 void main() {
-    vec3 color = vec3(1.0);
-    vec3 light = vec3(0.0);
-    light += ambientLight();
-    light += pointLight();
+    // 使用uniform参数，提供更好的灵活性
+    vec3 baseColor = u_baseColor;
+    vec3 lightColor = u_lightColor;
+    vec3 lightPos = u_lightPos;
 
-    fragColor = vec4(color * light, 1.0);
+    vec3 light = vec3(0.0);
+    light += ambientLight(lightColor);
+    light += pointLight(lightPos, lightColor);
+
+    // 确保颜色不会过亮
+    light = min(light, vec3(1.0));
+
+    fragColor = vec4(baseColor * light, 1.0);
 }
