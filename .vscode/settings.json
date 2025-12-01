@@ -1,12 +1,15 @@
 {
     "cSpell.words": [
         "Blinn",
+        "fract",
         "fres",
         "glsl",
         "ifdef",
         "ivec",
+        "Lerp",
         "mediump",
         "mult",
-        "Phong"
+        "Phong",
+        "smoothstep"
     ]
 }
