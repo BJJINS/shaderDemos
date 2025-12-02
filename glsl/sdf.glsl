@@ -55,6 +55,18 @@ float box_sdf(vec2 p, vec2 b) {
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 }
 
+float union_sdf(float a, float b) {
+    return min(a, b);
+}
+
+float intersection_sdf(float a, float b) {
+    return max(a, b);
+}
+
+float subtraction_sdf(float a, float b) {
+    return max(a, -b);
+}
+
 mat2 rotation(float radians) {
     float c = cos(radians);
     float s = sin(radians);
@@ -71,12 +83,20 @@ void main() {
     color = drawGrid(color, vec3(0.5), 10.0, 1.0);
     color = drawGrid(color, vec3(0.0), 100.0, 2.0);
 
-    // color = mix(YELLOW, color, step(0.0, circle_sdf(pixelCoord, 200.0)));
-    // color = mix(BLUE, color, step(20.0, line_sdf(pixelCoord, vec2(0.0), vec2(400.0))));
+    vec2 pos = pixelCoord - vec2(0.0, 400.0);
+    float d_circle_1 = circle_sdf(pos, 200.0);
+    pos = pixelCoord + vec2(400.0);
+    float d_circle_2 = circle_sdf(pos, 200.0);
+    pos = pixelCoord + vec2(-400.0, 400.0);
+    float d_circle_3 = circle_sdf(pos, 200.0);
 
-    vec2 pos = pixelCoord - vec2(400.0);
-    pos = rotation(u_time) * pos;
-    color = mix(RED, color, step(0.0, box_sdf(pos, vec2(100.0))));
+    float d = union_sdf(d_circle_1, d_circle_2);
+    d = union_sdf(d, d_circle_3);
+
+    pos = rotation(u_time) * pixelCoord;
+    float d_box = box_sdf(pos, vec2(300.0));
+    d = subtraction_sdf(d, d_box);
+    color = mix(RED, color, step(0.0, d));
 
     fragColor = vec4(color, 1.0);
 }
